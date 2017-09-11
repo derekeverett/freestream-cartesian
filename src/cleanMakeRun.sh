@@ -1,0 +1,3 @@
+rm Run
+make
+./Run

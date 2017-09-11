@@ -1,0 +1,3 @@
+freestream-cartesian simulates the solution of the collisionless Boltzmann Equation assuming
+that the particles are massless and that the initial distribution function is isotropic in momentum space (px, py, pz).
+Given an intial energy density profile, it computes the stress energy tensor at a later time. 
