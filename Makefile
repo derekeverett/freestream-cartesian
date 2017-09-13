@@ -7,10 +7,11 @@ CC = g++
 CFLAGS = -g -Wall
 LIBS= -lgslcblas -lgsl
 #build target
+SRC = src
 TARGET = Run
 
 all: $(TARGET)
 
-$(TARGET): $(TARGET).cpp
-	$(CC) $(CFLAGS) $(LIBS) -o $(TARGET) $(TARGET).cpp
+$(TARGET): $(SRC)/$(TARGET).cpp
+	$(CC) $(CFLAGS) $(LIBS) -o $(TARGET) $(SRC)/$(TARGET).cpp
 clean:
