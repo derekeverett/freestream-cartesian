@@ -8,3 +8,4 @@
 #define DY 0.1f //spacing of grid in y direction
 #define DZ 0.1f //spacing of grid in eta direction
 #define DT 0.5f //free streaming time step size
+#define EOS_TYPE 2 // 1 for conformal EOS, 2 for Wuppertal-Budhapest parameterization 

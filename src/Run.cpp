@@ -7,6 +7,7 @@
 #include "FreeStream.cpp"
 #include "InitialConditions.cpp"
 #include "LandauMatch.cpp"
+#include "EquationOfState.cpp"
 #include "Memory.cpp"
 #include "FileIO.cpp"
 #include <stdlib.h>
@@ -55,6 +56,9 @@ int main(void)
   //the flow velocity
   float ****flowVelocity;
   flowVelocity = calloc4dArray(flowVelocity, 4, DIM_X, DIM_Y, DIM_Z);
+  //the pressure
+  float ***pressure;
+  pressure = calloc3dArray(pressure, DIM_X, DIM_Y, DIM_Z);
 
   //initialize energy density; here we use gaussian for testing
   printf("setting initial conditions on energy density\n");
@@ -96,8 +100,12 @@ int main(void)
   solveEigenSystem(stressTensor, energyDensity, flowVelocity);
   t = clock() - t;
   printf("solving eigenvalue problem took %f seconds\n", ((float)t)/CLOCKS_PER_SEC);
+
+  calculatePressure(energyDensity, pressure);
+
   printf("writing hydro variables to file\n");
   writeVarToFile(energyDensity, "energy_density");
+  writeVarToFile(pressure, "pressure");
 
   //free the memory
   free3dArray(initialEnergyDensity, DIM_X, DIM_Y);
@@ -107,6 +115,7 @@ int main(void)
   free3dArray(trigTable, 10, DIM_THETAP);
 
   free3dArray(energyDensity, DIM_X, DIM_Y);
+  free3dArray(pressure, DIM_X, DIM_Y);
   free4dArray(flowVelocity, 4, DIM_X, DIM_Y);
   printf("Done... Goodbye!\n");
 }
