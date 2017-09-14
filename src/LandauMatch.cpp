@@ -88,28 +88,59 @@ void solveEigenSystem(float ****stressTensor)
         gsl_matrix_set(Tmunu, 3, 1, stressTensor[6][ix][iy][iz]); //zx
         gsl_matrix_set(Tmunu, 3, 2, stressTensor[8][ix][iy][iz]); //zy
 
-        //set the values of the metric
+        //set the values of the "metric"; not really the metric, but the numerical constants
+        //which are multiplied by the elements of T^(mu,nu) to get the values of T^(mu)_(nu)
         gsl_matrix_set(gmunu, 0, 0, 1.0); //tt
-        gsl_matrix_set(gmunu, 0, 1, 0.0); //tx
-        gsl_matrix_set(gmunu, 0, 2, 0.0); //ty
-        gsl_matrix_set(gmunu, 0, 3, 0.0); //tz
-        gsl_matrix_set(gmunu, 1, 0, 0.0); //xt
-        gsl_matrix_set(gmunu, 1, 1, 1.0); //xx
-        gsl_matrix_set(gmunu, 1, 2, 0.0); //xy
-        gsl_matrix_set(gmunu, 1, 3, 0.0); //xz
-        gsl_matrix_set(gmunu, 2, 0, 0.0); //yt
-        gsl_matrix_set(gmunu, 2, 1, 0.0); //yx
-        gsl_matrix_set(gmunu, 2, 2, 1.0); //yy
-        gsl_matrix_set(gmunu, 2, 3, 0.0); //yz
-        gsl_matrix_set(gmunu, 3, 0, 0.0); //zt
-        gsl_matrix_set(gmunu, 3, 1, 0.0); //zx
-        gsl_matrix_set(gmunu, 3, 2, 0.0); //zy
-        gsl_matrix_set(gmunu, 3, 3, 1.0); //zz
+        gsl_matrix_set(gmunu, 0, 1, -1.0); //tx
+        gsl_matrix_set(gmunu, 0, 2, -1.0); //ty
+        gsl_matrix_set(gmunu, 0, 3, -1.0); //tz
+        gsl_matrix_set(gmunu, 1, 0, 1.0); //xt
+        gsl_matrix_set(gmunu, 1, 1, -1.0); //xx
+        gsl_matrix_set(gmunu, 1, 2, -1.0); //xy
+        gsl_matrix_set(gmunu, 1, 3, -1.0); //xz
+        gsl_matrix_set(gmunu, 2, 0, 1.0); //yt
+        gsl_matrix_set(gmunu, 2, 1, -1.0); //yx
+        gsl_matrix_set(gmunu, 2, 2, -1.0); //yy
+        gsl_matrix_set(gmunu, 2, 3, -1.0); //yz
+        gsl_matrix_set(gmunu, 3, 0, 1.0); //zt
+        gsl_matrix_set(gmunu, 3, 1, -1.0); //zx
+        gsl_matrix_set(gmunu, 3, 2, -1.0); //zy
+        gsl_matrix_set(gmunu, 3, 3, -1.0); //zz
         //lower one index of the stress tensor; save it to the same matrix to save memory
-        gsl_matrix_mul_elements(Tmunu, gmunu); //result stored in Tmunu
+        gsl_matrix_mul_elements(Tmunu, gmunu); //result stored in Tmunu !this multiplies element-wise, not ordinary matrix multiplication!
         gsl_eigen_nonsymmv_workspace *eigen_workspace;
         eigen_workspace = gsl_eigen_nonsymmv_alloc(4);
         gsl_eigen_nonsymmv(Tmunu, eigen_values, eigen_vectors, eigen_workspace);
+        gsl_eigen_nonsymmv_free(eigen_workspace);
+        for (int i = 0; i < 4; i++)
+        {
+          gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
+
+          if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0.0)
+          {
+            double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 0));
+            double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
+            double v2 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 2));
+            double v3 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 3));
+            //double euclideanLength = v0*v0 + v1*v1 + v2*v2 + v3*v3; //gsl normalizes eigenvectors to euclideanLength = 1; this is just a check
+            double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
+            double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
+            v0 = scaleFactor * v0;
+            v1 = scaleFactor * v1;
+            v2 = scaleFactor * v2;
+            v3 = scaleFactor * v3;
+            printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
+          }
+          /*
+
+          double invarLength = v0*v0 - (v1*v1 + v2*v2 + v3*v3);
+          double euclidLength = v0*v0 + (v1*v1 + v2*v2 + v3*v3);
+          printf("Eigenvalue %d is %f\n", i, GSL_REAL(gsl_vector_complex_get(eigen_values, i)));
+          printf("eigenvector %d is (%f ,%f , %f, %f)\n", i, v0, v1, v2, v3);
+          printf("invarLength = %f for i = %d \n", invarLength, i);
+          printf("euclidLength = %f for i = %d \n", euclidLength, i);
+          */
+        }
       }
     }
   }
