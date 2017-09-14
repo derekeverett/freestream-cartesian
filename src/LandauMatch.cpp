@@ -53,7 +53,7 @@ void calculateStressTensor(float ****stressTensor, float *****shiftedDensity, fl
     }
   }
 }
-void solveEigenSystem(float ****stressTensor)
+void solveEigenSystem(float ****stressTensor, float ***energyDensity, float ****flowVelocity)
 {
   for (int ix = 0; ix < DIM_X; ix++)
   {
@@ -129,17 +129,14 @@ void solveEigenSystem(float ****stressTensor)
             v1 = scaleFactor * v1;
             v2 = scaleFactor * v2;
             v3 = scaleFactor * v3;
-            printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
+            //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
+            //set values of energy density and flow velocity
+            energyDensity[ix][iy][iz] = GSL_REAL(eigenvalue);
+            flowVelocity[0][ix][iy][iz] = v0;
+            flowVelocity[1][ix][iy][iz] = v1;
+            flowVelocity[2][ix][iy][iz] = v2;
+            flowVelocity[3][ix][iy][iz] = v3;
           }
-          /*
-
-          double invarLength = v0*v0 - (v1*v1 + v2*v2 + v3*v3);
-          double euclidLength = v0*v0 + (v1*v1 + v2*v2 + v3*v3);
-          printf("Eigenvalue %d is %f\n", i, GSL_REAL(gsl_vector_complex_get(eigen_values, i)));
-          printf("eigenvector %d is (%f ,%f , %f, %f)\n", i, v0, v1, v2, v3);
-          printf("invarLength = %f for i = %d \n", invarLength, i);
-          printf("euclidLength = %f for i = %d \n", euclidLength, i);
-          */
         }
       }
     }

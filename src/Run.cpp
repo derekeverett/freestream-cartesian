@@ -8,6 +8,7 @@
 #include "InitialConditions.cpp"
 #include "LandauMatch.cpp"
 #include "Memory.cpp"
+#include "FileIO.cpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -30,91 +31,31 @@ int main(void)
   zmin = (-1.0) * zmax;
 
   //allocate and initialize memory
-  //write functions in Memory.cpp to do this
   printf("Allocating memory\n");
   //the initial energy density spatial profile
   float ***initialEnergyDensity;
   initialEnergyDensity = calloc3dArray(initialEnergyDensity, DIM_X, DIM_Y, DIM_Z);
-
-  /*
-  initialEnergyDensity = (float ***)calloc(DIM_X, sizeof(float **));
-  for (int ix = 0; ix < DIM_X; ix++)
-  {
-    initialEnergyDensity[ix] = (float **)calloc(DIM_Y, sizeof(float *));
-    for (int iy = 0; iy < DIM_Y; iy++)
-    {
-      initialEnergyDensity[ix][iy] = (float *)calloc(DIM_Z, sizeof(float));
-    }
-  }
-  */
   //the initial density G^(0,0) at time t0
   float ***density;
   density = calloc3dArray(density, DIM_X, DIM_Y, DIM_Z);
-  /*
-  density = (float ***)calloc(DIM_X, sizeof(float **));
-  for (int ix = 0; ix < DIM_X; ix++)
-  {
-    density[ix] = (float **)calloc(DIM_Y, sizeof(float *));
-    for (int iy = 0; iy < DIM_Y; iy++)
-    {
-      density[ix][iy] = (float *)calloc(DIM_Z, sizeof(float));
-    }
-  }
-  */
   //the shited density profile G^(0,0) at time t
   float *****shiftedDensity;
   shiftedDensity = calloc5dArray(shiftedDensity, DIM_X, DIM_Y, DIM_Z, DIM_THETAP, DIM_PHIP);
-  /*
-  shiftedDensity = (float *****)calloc(DIM_X, sizeof(float ****));
-  for (int ix = 0; ix < DIM_X; ix++)
-  {
-    shiftedDensity[ix] = (float ****)calloc(DIM_Y, sizeof(float ***));
-    for (int iy = 0; iy < DIM_Y; iy++)
-    {
-      shiftedDensity[ix][iy] = (float ***)calloc(DIM_Z, sizeof(float **));
-      for (int iz = 0; iz < DIM_Z; iz++)
-      {
-        shiftedDensity[ix][iy][iz] = (float **)calloc(DIM_THETAP, sizeof(float *));
-        for(int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
-        {
-          shiftedDensity[ix][iy][iz][ithetap] = (float *)calloc(DIM_PHIP, sizeof(float));
-        }
-      }
-    }
-  }
-  */
   //the ten independent components of the stress tensor
   float ****stressTensor;
   stressTensor = calloc4dArray(stressTensor, 10, DIM_X, DIM_Y, DIM_Z);
-  /*
-  stressTensor = (float ****)calloc(10, sizeof(float ***)); //10 independent components in 3+1d
-  for (int ivar = 0; ivar < 10; ivar++)
-  {
-    stressTensor[ivar] = (float ***)calloc(DIM_X, sizeof(float **));
-    for (int ix = 0; ix < DIM_X; ix++)
-    {
-      stressTensor[ivar][ix] = (float **)calloc(DIM_Y, sizeof(float *));
-      for (int iy = 0; iy < DIM_Y; iy++)
-      {
-        stressTensor[ivar][ix][iy] = (float *)calloc(DIM_Z, sizeof(float));
-      }
-    }
-  }
-  */
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu) normalized by energy
   float ***trigTable;
   trigTable = calloc3dArray(trigTable, 10, DIM_THETAP, DIM_PHIP);
-  /*
-  trigTable = (float ***)calloc(10, sizeof(float **));
-  for (int ivar = 0; ivar < 10; ivar++)
-  {
-    trigTable[ivar] = (float **)calloc(DIM_THETAP, sizeof(float *));
-    for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
-    {
-      trigTable[ivar][ithetap] = (float *)calloc(DIM_PHIP, sizeof(float));
-    }
-  }
-  */
+
+  //variables to store the hydrodynamic variables after the Landau matching is performed
+  //the energy density
+  float ***energyDensity;
+  energyDensity = calloc3dArray(energyDensity, DIM_X, DIM_Y, DIM_Z);
+  //the flow velocity
+  float ****flowVelocity;
+  flowVelocity = calloc4dArray(flowVelocity, 4, DIM_X, DIM_Y, DIM_Z);
+
   //initialize energy density; here we use gaussian for testing
   printf("setting initial conditions on energy density\n");
   initializeGauss(initialEnergyDensity, xmax, ymax, zmax, 1.0);
@@ -152,10 +93,11 @@ int main(void)
   //solve the eigenvalue problem for the energy density and flow velocity
   printf("solving eigenvalue problem for energy density and flow velocity\n");
   t = clock();
-  solveEigenSystem(stressTensor);
+  solveEigenSystem(stressTensor, energyDensity, flowVelocity);
   t = clock() - t;
   printf("solving eigenvalue problem took %f seconds\n", ((float)t)/CLOCKS_PER_SEC);
-  //printf("writing hydro variables to file\n");
+  printf("writing hydro variables to file\n");
+  writeVarToFile(energyDensity, "energy_density");
 
   //free the memory
   free3dArray(initialEnergyDensity, DIM_X, DIM_Y);
@@ -163,5 +105,8 @@ int main(void)
   free5dArray(shiftedDensity, DIM_X, DIM_Y, DIM_Z, DIM_THETAP);
   free4dArray(stressTensor, 10, DIM_X, DIM_Y);
   free3dArray(trigTable, 10, DIM_THETAP);
+
+  free3dArray(energyDensity, DIM_X, DIM_Y);
+  free4dArray(flowVelocity, 4, DIM_X, DIM_Y);
   printf("Done... Goodbye!\n");
 }
