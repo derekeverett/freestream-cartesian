@@ -47,7 +47,7 @@ int main(void)
   stressTensor = calloc4dArray(stressTensor, 10, DIM_X, DIM_Y, DIM_Z);
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu) normalized by energy
   float ***trigTable;
-  trigTable = calloc3dArray(trigTable, 10, DIM_THETAP, DIM_PHIP);
+  trigTable = calloc3dArray(trigTable, 11, DIM_THETAP, DIM_PHIP);
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
@@ -59,6 +59,10 @@ int main(void)
   //the pressure
   float ***pressure;
   pressure = calloc3dArray(pressure, DIM_X, DIM_Y, DIM_Z);
+  float ***bulkPressure;
+  bulkPressure = calloc3dArray(bulkPressure, DIM_X, DIM_Y, DIM_Z);
+  float ****shearTensor;
+  shearTensor = calloc4dArray(shearTensor, 6, DIM_X, DIM_Y, DIM_Z); //calculate 6 components, can check tracelessness for accuracy
 
   //initialize energy density; here we use gaussian for testing
   printf("setting initial conditions on energy density\n");
@@ -102,20 +106,24 @@ int main(void)
   printf("solving eigenvalue problem took %f seconds\n", ((float)t)/CLOCKS_PER_SEC);
 
   calculatePressure(energyDensity, pressure);
+  calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure);
+  calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor);
 
   printf("writing hydro variables to file\n");
   writeVarToFile(energyDensity, "energy_density");
   writeVarToFile(pressure, "pressure");
+  writeVarToFile(bulkPressure, "bulk_pressure");
 
   //free the memory
   free3dArray(initialEnergyDensity, DIM_X, DIM_Y);
   free3dArray(density, DIM_X, DIM_Y);
   free5dArray(shiftedDensity, DIM_X, DIM_Y, DIM_Z, DIM_THETAP);
   free4dArray(stressTensor, 10, DIM_X, DIM_Y);
-  free3dArray(trigTable, 10, DIM_THETAP);
+  free3dArray(trigTable, 11, DIM_THETAP);
 
   free3dArray(energyDensity, DIM_X, DIM_Y);
   free3dArray(pressure, DIM_X, DIM_Y);
+  free3dArray(bulkPressure, DIM_X, DIM_Y);
   free4dArray(flowVelocity, 4, DIM_X, DIM_Y);
   printf("Done... Goodbye!\n");
 }

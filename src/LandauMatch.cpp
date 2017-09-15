@@ -24,6 +24,7 @@ void calculateTrigTable(float ***trigTable)
       trigTable[7][ithetap][iphip] = sin(thetap) * sin(phip) * sin(thetap) * sin(phip); //p_y, p_y
       trigTable[8][ithetap][iphip] = sin(thetap) * sin(phip) * cos(thetap); //p_y, p_z
       trigTable[9][ithetap][iphip] = cos(thetap) * cos(thetap); //p_z, p_z
+      trigTable[10][ithetap][iphip] = sin(thetap); //just sin (thetap), useful for when we calculate stress tensor
     }
   }
 }
@@ -45,7 +46,8 @@ void calculateStressTensor(float ****stressTensor, float *****shiftedDensity, fl
             for (int iphip = 0; iphip < DIM_PHIP; iphip++)
             {
               //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
-              stressTensor[ivar][ix][iy][iz] += shiftedDensity[ix][iy][iz][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * sin(thetap) * d_thetap * d_phip;
+              //note trigTable[10][ithetap][iphip] = sin(thetap), calculated in calculateTrigTable
+              stressTensor[ivar][ix][iy][iz] += shiftedDensity[ix][iy][iz][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip] * d_thetap * d_phip;
             }
           }
         }
@@ -138,6 +140,42 @@ void solveEigenSystem(float ****stressTensor, float ***energyDensity, float ****
             flowVelocity[3][ix][iy][iz] = v3;
           }
         }
+      }
+    }
+  }
+}
+void calculateBulkPressure(float ****stressTensor, float ***energyDensity, float ***pressure, float ***bulkPressure)
+{
+  for (int ix = 0; ix < DIM_X; ix++)
+  {
+    for (int iy = 0; iy < DIM_Y; iy++)
+    {
+      for (int iz = 0; iz < DIM_Z; iz++)
+      {
+        // PI = -1/3 * (T^(mu)_(mu) - epsilon) - p
+        // T^(mu)_(mu) = T^(0,0) - T^(1,1) - T^(2,2) - T^(3,3)
+        float a =  stressTensor[0][ix][iy][iz] - stressTensor[4][ix][iy][iz] - stressTensor[7][ix][iy][iz] - stressTensor[9][ix][iy][iz];
+        bulkPressure[ix][iy][iz] = (-1.0/3.0) * (a - energyDensity[ix][iy][iz]) - pressure[ix][iy][iz];
+      }
+    }
+  }
+}
+void calculateShearViscTensor(float ****stressTensor, float ***energyDensity, float ****flowVelocity, float ***pressure, float ***bulkPressure, float ****shearTensor)
+{
+  for (int ix = 0; ix < DIM_X; ix++)
+  {
+    for (int iy = 0; iy < DIM_Y; iy++)
+    {
+      for (int iz = 0; iz < DIM_Z; iz++)
+      {
+        // pi^(mu,nu) = T^(mu,nu) - epsilon * u^(mu)u^(nu) + (P + PI) * (g^(mu,nu) - u^(mu)u^(nu))
+        float c = energyDensity[ix][iy][iz] + pressure[ix][iy][iz] + bulkPressure[ix][iy][iz];
+        shearTensor[0][ix][iy][iz] = stressTensor[1][ix][iy][iz] - flowVelocity[0][ix][iy][iz] * flowVelocity[1][ix][iy][iz] * c; //pi^(0,1)
+        shearTensor[1][ix][iy][iz] = stressTensor[2][ix][iy][iz] - flowVelocity[0][ix][iy][iz] * flowVelocity[2][ix][iy][iz] * c; //pi^(0,2)
+        shearTensor[2][ix][iy][iz] = stressTensor[3][ix][iy][iz] - flowVelocity[0][ix][iy][iz] * flowVelocity[3][ix][iy][iz] * c; //pi^(0,3)
+        shearTensor[3][ix][iy][iz] = stressTensor[5][ix][iy][iz] - flowVelocity[1][ix][iy][iz] * flowVelocity[2][ix][iy][iz] * c; //pi^(1,2)
+        shearTensor[4][ix][iy][iz] = stressTensor[6][ix][iy][iz] - flowVelocity[1][ix][iy][iz] * flowVelocity[3][ix][iy][iz] * c; //pi^(1,3)
+        shearTensor[5][ix][iy][iz] = stressTensor[8][ix][iy][iz] - flowVelocity[2][ix][iy][iz] * flowVelocity[3][ix][iy][iz] * c; //pi^(2,3)
       }
     }
   }

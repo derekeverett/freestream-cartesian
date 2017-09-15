@@ -1,6 +1,7 @@
 void calculatePressure(float ***energyDensity, float ***pressure)
 {
-  if (EOS_TYPE == 1) //conformal eqn of state
+  //conformal eqn of state
+  if (EOS_TYPE == 1)
   {
     for (int ix = 0; ix < DIM_X; ix++)
     {
@@ -13,8 +14,8 @@ void calculatePressure(float ***energyDensity, float ***pressure)
       }
     }
   }
-
-  else //parameterization from Wuppertal-Budapest collaboration, taken from cpu-vh/.../EquationOfState.cpp
+  //parameterization from Wuppertal-Budapest collaboration, taken from cpu-vh/.../EquationOfState.cpp
+  else
   {
     float a0 = -0.25181736420168666;
     float a1 = 9737.845799644809;
