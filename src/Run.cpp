@@ -34,35 +34,35 @@ int main(void)
   //allocate and initialize memory
   printf("Allocating memory\n");
   //the initial energy density spatial profile
-  float ***initialEnergyDensity;
-  initialEnergyDensity = calloc3dArray(initialEnergyDensity, DIM_X, DIM_Y, DIM_Z);
+  float *initialEnergyDensity;
+  initialEnergyDensity = (float *)calloc(DIM, sizeof(float));
   //the initial density G^(0,0) at time t0
-  float ***density;
-  density = calloc3dArray(density, DIM_X, DIM_Y, DIM_Z);
+  float *density;
+  density = (float *)calloc(DIM, sizeof(float));
   //the shited density profile G^(0,0) at time t
-  float *****shiftedDensity;
-  shiftedDensity = calloc5dArray(shiftedDensity, DIM_X, DIM_Y, DIM_Z, DIM_THETAP, DIM_PHIP);
+  float ***shiftedDensity;
+  shiftedDensity = calloc3dArray(shiftedDensity, DIM, DIM_THETAP, DIM_PHIP);
   //the ten independent components of the stress tensor
-  float ****stressTensor;
-  stressTensor = calloc4dArray(stressTensor, 10, DIM_X, DIM_Y, DIM_Z);
+  float **stressTensor;
+  stressTensor = calloc2dArray(stressTensor, 10, DIM);
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu) normalized by energy
   float ***trigTable;
   trigTable = calloc3dArray(trigTable, 11, DIM_THETAP, DIM_PHIP);
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
-  float ***energyDensity;
-  energyDensity = calloc3dArray(energyDensity, DIM_X, DIM_Y, DIM_Z);
+  float *energyDensity;
+  energyDensity = (float *)calloc(DIM, sizeof(float));
   //the flow velocity
-  float ****flowVelocity;
-  flowVelocity = calloc4dArray(flowVelocity, 4, DIM_X, DIM_Y, DIM_Z);
+  float **flowVelocity;
+  flowVelocity = calloc2dArray(flowVelocity, 4, DIM);
   //the pressure
-  float ***pressure;
-  pressure = calloc3dArray(pressure, DIM_X, DIM_Y, DIM_Z);
-  float ***bulkPressure;
-  bulkPressure = calloc3dArray(bulkPressure, DIM_X, DIM_Y, DIM_Z);
-  float ****shearTensor;
-  shearTensor = calloc4dArray(shearTensor, 6, DIM_X, DIM_Y, DIM_Z); //calculate 6 components, can check tracelessness for accuracy
+  float *pressure;
+  pressure = (float *)calloc(DIM, sizeof(float));
+  float *bulkPressure;
+  bulkPressure = (float *)calloc(DIM, sizeof(float));
+  float **shearTensor;
+  shearTensor = calloc2dArray(shearTensor, 6, DIM); //calculate 6 components, can check tracelessness for accuracy
 
   //initialize energy density; here we use gaussian for testing
   printf("setting initial conditions on energy density\n");
@@ -115,15 +115,17 @@ int main(void)
   writeVarToFile(bulkPressure, "bulk_pressure");
 
   //free the memory
-  free3dArray(initialEnergyDensity, DIM_X, DIM_Y);
-  free3dArray(density, DIM_X, DIM_Y);
-  free5dArray(shiftedDensity, DIM_X, DIM_Y, DIM_Z, DIM_THETAP);
-  free4dArray(stressTensor, 10, DIM_X, DIM_Y);
+  free(initialEnergyDensity);
+  free(density);
+  free3dArray(shiftedDensity, DIM, DIM_THETAP);
+  free2dArray(stressTensor, 10);
   free3dArray(trigTable, 11, DIM_THETAP);
 
-  free3dArray(energyDensity, DIM_X, DIM_Y);
-  free3dArray(pressure, DIM_X, DIM_Y);
-  free3dArray(bulkPressure, DIM_X, DIM_Y);
-  free4dArray(flowVelocity, 4, DIM_X, DIM_Y);
+  free(energyDensity);
+  free2dArray(flowVelocity, 4);
+  free(pressure);
+  free(bulkPressure);
+  free2dArray(shearTensor, 6);
+
   printf("Done... Goodbye!\n");
 }

@@ -1,17 +1,11 @@
-void calculatePressure(float ***energyDensity, float ***pressure)
+void calculatePressure(float *energyDensity, float *pressure)
 {
   //conformal eqn of state
   if (EOS_TYPE == 1)
   {
-    for (int ix = 0; ix < DIM_X; ix++)
+    for (int is = 0; is < DIM; is++)
     {
-      for (int iy = 0; iy < DIM_Y; iy++)
-      {
-        for (int iz = 0; iz < DIM_Z; iz++)
-        {
-          pressure[ix][iy][iz] = energyDensity[ix][iy][iz] / 3.0;
-        }
-      }
+      pressure[is] = energyDensity[is] / 3.0;
     }
   }
   //parameterization from Wuppertal-Budapest collaboration, taken from cpu-vh/.../EquationOfState.cpp
@@ -45,30 +39,24 @@ void calculatePressure(float ***energyDensity, float ***pressure)
     float b11 = 5.928138360995685e-11;
     float b12 = 3.2581066229887368e-18;
 
-    for (int ix = 0; ix < DIM_X; ix++)
+    for (int is = 0; is < DIM; is++)
     {
-      for (int iy = 0; iy < DIM_Y; iy++)
-      {
-        for (int iz = 0; iz < DIM_Z; iz++)
-        {
-          float e = energyDensity[ix][iy][iz];
-          float e1 = e;
-          float e2 = e*e;
-          float e3 = e2*e;
-          float e4 = e3*e;
-          float e5 = e4*e;
-          float e6 = e5*e;
-          float e7 = e6*e;
-          float e8 = e7*e;
-          float e9 = e8*e;
-          float e10 = e9*e;
-          float e11 = e10*e;
-          float e12 = e11*e;
-          float a = (float)fmaf(a12,e12,fmaf(a11,e11,fmaf(a10,e10,fmaf(a9,e9,fmaf(a8,e8,fmaf(a7,e7,fmaf(a6,e6,fmaf(a5,e5,fmaf(a4,e4,fmaf(a3,e3,fmaf(a2,e2,fmaf(a1,e1,a0))))))))))));
-          float b = (float)fmaf(b12,e12,fmaf(b11,e11,fmaf(b10,e10,fmaf(b9,e9,fmaf(b8,e8,fmaf(b7,e7,fmaf(b6,e6,fmaf(b5,e5,fmaf(b4,e4,fmaf(b3,e3,fmaf(b2,e2,fmaf(b1,e1,b0))))))))))));
-          pressure[ix][iy][iz] = a / b;
-        }
-      }
+      float e = energyDensity[is];
+      float e1 = e;
+      float e2 = e*e;
+      float e3 = e2*e;
+      float e4 = e3*e;
+      float e5 = e4*e;
+      float e6 = e5*e;
+      float e7 = e6*e;
+      float e8 = e7*e;
+      float e9 = e8*e;
+      float e10 = e9*e;
+      float e11 = e10*e;
+      float e12 = e11*e;
+      float a = (float)fmaf(a12,e12,fmaf(a11,e11,fmaf(a10,e10,fmaf(a9,e9,fmaf(a8,e8,fmaf(a7,e7,fmaf(a6,e6,fmaf(a5,e5,fmaf(a4,e4,fmaf(a3,e3,fmaf(a2,e2,fmaf(a1,e1,a0))))))))))));
+      float b = (float)fmaf(b12,e12,fmaf(b11,e11,fmaf(b10,e10,fmaf(b9,e9,fmaf(b8,e8,fmaf(b7,e7,fmaf(b6,e6,fmaf(b5,e5,fmaf(b4,e4,fmaf(b3,e3,fmaf(b2,e2,fmaf(b1,e1,b0))))))))))));
+      pressure[is] = a / b;
     }
   }
 }

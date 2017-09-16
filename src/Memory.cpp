@@ -1,3 +1,13 @@
+float ** calloc2dArray(float **array, int dim1, int dim2)
+{
+  array = (float **)calloc(dim1, sizeof(float *));
+  for (int i1 = 0; i1 < dim1; i1++)
+  {
+    array[i1] = (float *)calloc(dim2, sizeof(float));
+  }
+  return array;
+}
+
 float *** calloc3dArray(float ***array, int dim1, int dim2, int dim3)
 {
   array = (float ***)calloc(dim1, sizeof(float **));
@@ -50,6 +60,15 @@ float ***** calloc5dArray(float *****array, int dim1, int dim2, int dim3, int di
     }
   }
   return array;
+}
+
+void free2dArray(float **array, int dim1)
+{
+  for (int i1 = 0; i1 < dim1; i1++)
+  {
+    free(array[i1]);
+  }
+  free(array);
 }
 
 void free3dArray(float ***array, int dim1, int dim2)

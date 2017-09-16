@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fstream>
-void writeVarToFile(float ***var, char name[255])
+void writeVarToFile(float *var, char name[255])
 {
   char cwd[1024];
   getcwd(cwd, sizeof(cwd));
@@ -18,7 +18,10 @@ void writeVarToFile(float ***var, char name[255])
         float x = (float)ix * DX  - (((float)(DIM_X-1)) / 2.0 * DX);
         float y = (float)iy * DY  - (((float)(DIM_Y-1)) / 2.0 * DY);
         float z = (float)iz * DZ  - (((float)(DIM_Z-1)) / 2.0 * DZ);
-        myfile << x << "\t" << y << "\t" << z << "\t" << var[ix][iy][iz] << "\n";
+
+        int is = (DIM_Y * DIM_Z) * ix + (DIM_Y) * iy + iz; //the column packed index spanning x, y, z
+
+        myfile << x << "\t" << y << "\t" << z << "\t" << var[is] << "\n";
       }
     }
   }
