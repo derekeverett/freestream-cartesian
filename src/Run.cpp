@@ -1,7 +1,8 @@
 // CPU-freestream
 // simulates 3 dimensional free streaming of massless particles given an
 // initial energy density profile, assuming initial momentum space isotropy in px,py,pz.
-// Then performs Landau Matching to find the components of Energy Momentum Tensor.
+// Then performs Landau Matching to find the components of Energy Momentum Tensor
+// and performs standard viscous hydro decomposition.
 
 #include "Parameters.h"
 #include "FreeStream.cpp"
