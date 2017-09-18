@@ -8,6 +8,7 @@
 #include <gsl/gsl_sort_vector.h>
 void calculateTrigTable(float ***trigTable)
 {
+  #pragma omp parallel for
   for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
   {
     for (int iphip = 0; iphip < DIM_PHIP; iphip++)
@@ -32,9 +33,10 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 {
   float d_thetap = PI / float(DIM_THETAP);
   float d_phip = (2.0 * PI) / float(DIM_PHIP);
-  #pragma omp parallel for
+
   for (int ivar = 0; ivar < 10; ivar++) //ten independent components
   {
+    #pragma omp parallel for
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
@@ -51,6 +53,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     gsl_matrix *Tmunu; //T^(mu,nu) with two contravariant indices; we need to lower an index

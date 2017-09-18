@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <omp.h>
 //using namespace std;
 
 int main(void)
@@ -76,34 +77,34 @@ int main(void)
 
   //perform the free streaming time-update step
   printf("performing the free streaming time step\n");
-  clock_t t;
-  t = clock();
+  double sec;
+  sec = omp_get_wtime();
   freeStream(density, shiftedDensity, xmin, ymin, zmin);
-  t = clock() - t;
-  printf("Free streaming took %f seconds\n", ((float)t)/CLOCKS_PER_SEC);
+  sec = omp_get_wtime() - sec;
+  printf("Free streaming took %f seconds\n", sec);
 
   //Landau matching to find the components of energy-momentum tensor
   printf("Landau matching to find hydrodynamic variables\n");
 
   printf("calculating trig table\n");
-  t = clock();
+  sec = omp_get_wtime();
   calculateTrigTable(trigTable);
-  t = clock() - t;
-  printf("calculating trig table took %f seconds\n", ((float)t)/CLOCKS_PER_SEC);
+  sec = omp_get_wtime() - sec;
+  printf("calculating trig table took %f seconds\n", sec);
 
   //calculate the ten independent components of the stress tensor by integrating over momentum angles
   printf("calculating independent components of stress tensor\n");
-  t = clock();
+  sec = omp_get_wtime();
   calculateStressTensor(stressTensor, shiftedDensity, trigTable);
-  t = clock() - t;
-  printf("calculating stress tensor took %f seconds\n", ((float)t)/CLOCKS_PER_SEC);
+  sec = omp_get_wtime() - sec;
+  printf("calculating stress tensor took %f seconds\n", sec);
 
   //solve the eigenvalue problem for the energy density and flow velocity
   printf("solving eigenvalue problem for energy density and flow velocity\n");
-  t = clock();
+  sec = omp_get_wtime();
   solveEigenSystem(stressTensor, energyDensity, flowVelocity);
-  t = clock() - t;
-  printf("solving eigenvalue problem took %f seconds\n", ((float)t)/CLOCKS_PER_SEC);
+  sec = omp_get_wtime() - sec;
+  printf("solving eigenvalue problem took %f seconds\n", sec);
 
   calculatePressure(energyDensity, pressure);
   calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure);

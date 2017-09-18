@@ -1,6 +1,7 @@
 #include <math.h>
 void initializeZero(float *density)
 {
+  //#pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     density[is] = 0.0;
@@ -8,6 +9,7 @@ void initializeZero(float *density)
 }
 void initializeGauss(float *density, float xmax, float ymax, float zmax, float b)
 {
+  //#pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_Z);
