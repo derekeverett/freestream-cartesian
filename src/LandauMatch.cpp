@@ -35,7 +35,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 
   for (int ivar = 0; ivar < 10; ivar++) //ten independent components
   {
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
@@ -52,7 +52,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
-  #pragma omp parallel for
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     gsl_matrix *Tmunu; //T^(mu,nu) with two contravariant indices; we need to lower an index
@@ -127,8 +127,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         v3 = scaleFactor * v3;
         //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
         //set values of energy density and flow velocity
-        //energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
-        energyDensity[is] = GSL_REAL(eigenvalue);
+        energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
         flowVelocity[0][is] = v0;
         flowVelocity[1][is] = v1;
         flowVelocity[2][is] = v2;

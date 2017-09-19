@@ -1,7 +1,7 @@
 #define PI 3.141592654f //question bro?
-#define DIM_X 41 //number of grid points in x direction
-#define DIM_Y 41 //number of grid points in y direction
-#define DIM_Z 41 //number of grid points in z direction
+#define DIM_X 101 //number of grid points in x direction
+#define DIM_Y 101 //number of grid points in y direction
+#define DIM_Z 101 //number of grid points in z direction
 #define DIM (DIM_X * DIM_Y * DIM_Z) //total number of spatial grid points
 #define DIM_THETAP 31 //number of grid points in theta_p momentum polar angle
 #define DIM_PHIP 31 //number of grid points in phi_p momentum azimuthal angle
