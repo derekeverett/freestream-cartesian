@@ -2,7 +2,7 @@
 
 void freeStream(float *density, float ***shiftedDensity)
 {
-  #pragma omp parallel for simd 
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
@@ -47,9 +47,9 @@ void freeStream(float *density, float ***shiftedDensity)
 }
 void convertInitialDensity(float *initialEnergyDensity, float *density)
 {
-  float norm_factor = 1.0; //the normalization constant relating the intial energy density to the intial density profile H^(0,0)
+  float norm_factor = 1.0 / (4.0 * PI); //the normalization constant relating the intial energy density to the intial density profile G^(0,0)
   for (int is = 0; is < DIM; is++)
   {
-    density[is] = initialEnergyDensity[is] / norm_factor;
+    density[is] = initialEnergyDensity[is] * norm_factor;
   }
 }
