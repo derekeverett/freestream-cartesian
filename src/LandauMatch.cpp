@@ -8,7 +8,6 @@
 #include <gsl/gsl_sort_vector.h>
 void calculateTrigTable(float ***trigTable)
 {
-  #pragma omp parallel for
   for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
   {
     for (int iphip = 0; iphip < DIM_PHIP; iphip++)
@@ -107,6 +106,8 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     eigen_workspace = gsl_eigen_nonsymmv_alloc(4);
     gsl_eigen_nonsymmv(Tmunu, eigen_values, eigen_vectors, eigen_workspace);
     gsl_eigen_nonsymmv_free(eigen_workspace);
+
+    //***does this have a solution for energy density and flow at every point?
     for (int i = 0; i < 4; i++)
     {
       gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
@@ -126,6 +127,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         v3 = scaleFactor * v3;
         //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
         //set values of energy density and flow velocity
+        //energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
         energyDensity[is] = GSL_REAL(eigenvalue);
         flowVelocity[0][is] = v0;
         flowVelocity[1][is] = v1;

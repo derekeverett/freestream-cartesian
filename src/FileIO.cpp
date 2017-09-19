@@ -19,11 +19,34 @@ void writeVarToFile(float *var, char name[255])
         float y = (float)iy * DY  - (((float)(DIM_Y-1)) / 2.0 * DY);
         float z = (float)iz * DZ  - (((float)(DIM_Z-1)) / 2.0 * DZ);
 
-        int is = (DIM_Y * DIM_Z) * ix + (DIM_Y) * iy + iz; //the column packed index spanning x, y, z
+        int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
 
         myfile << x << "\t" << y << "\t" << z << "\t" << var[is] << "\n";
       }
     }
+  }
+  myfile.close();
+}
+
+//this function writes the transverse density of a variable at z = 0
+// as regularly spaced values
+void writeVarToFileProjection(float *var, char name[255])
+{
+  char cwd[1024];
+  getcwd(cwd, sizeof(cwd));
+  std::ofstream myfile;
+  char filename[255] = "";
+  sprintf(filename, "output/%s.dat", name);
+  myfile.open(filename);
+  for (int ix = 0; ix < DIM_X; ix++)
+  {
+    for (int iy = 0; iy < DIM_Y; iy++)
+    {
+      int iz = (DIM_Z - 1) / 2;
+      int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
+      myfile << var[is] << "\t"; //different columns for y values
+    }
+    myfile << "\n"; // different rows correspond to different x values
   }
   myfile.close();
 }

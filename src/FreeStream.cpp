@@ -1,6 +1,6 @@
 #include <math.h>
 
-void freeStream(float *density, float ***shiftedDensity, float xmin, float ymin, float zmin)
+void freeStream(float *density, float ***shiftedDensity)
 {
   #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
@@ -9,33 +9,35 @@ void freeStream(float *density, float ***shiftedDensity, float xmin, float ymin,
     {
       for (int iphip = 0; iphip < DIM_PHIP; iphip++)
       {
-        float x, y, z, x_new, y_new, z_new, thetap, phip;
-        int ix_new, iy_new, iz_new, is_new;
-
         int ix = is / (DIM_Y * DIM_Z);
         int iy = (is - (DIM_Y * DIM_Z * ix))/ DIM_Z;
         int iz = is - (DIM_Y * DIM_Z * ix) - (DIM_Z * iy);
 
-        x = xmin + (float(ix) * DX);
-        y = ymin + (float(iy) * DY);
-        z = zmin + (float(iz) * DZ);
-        thetap = float(ithetap) * (PI) / float(DIM_THETAP);
-        phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
+        float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
+        float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
+        float zmin = (-1.0) * ((float)(DIM_Z-1) / 2.0) * DZ;
 
-        //could instead tabulate sin(thetap) and cos(thetap) ahead of time
-        // to reduce runtime but program is already fairly fast - may be uncessary
-        x_new = x - (DT * sin(thetap) * cos(phip));
-        y_new = y - (DT * sin(thetap) * sin(phip));
-        z_new = z - (DT * cos(thetap));
+        float x = (float)ix * DX  + xmin;
+        float y = (float)iy * DY  + ymin;
+        float z = (float)iz * DZ  + zmin;
 
-        ix_new = (int)round((x_new - xmin) / DX);
-        iy_new = (int)round((y_new - ymin) / DY);
-        iz_new = (int)round((z_new - zmin) / DZ);
+        float thetap = float(ithetap) * (PI) / float(DIM_THETAP);
+        float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
-        is_new = (DIM_Y * DIM_Z) * ix_new + (DIM_Y) * iy_new + iz_new;
+        //these trig functions could be tabulated ahead of time!
+        float x_new = x - (DT * sin(thetap) * cos(phip));
+        float y_new = y - (DT * sin(thetap) * sin(phip));
+        float z_new = z - (DT * cos(thetap));
+
+        int ix_new = (int)round((x_new - xmin) / DX);
+        int iy_new = (int)round((y_new - ymin) / DY);
+        int iz_new = (int)round((z_new - zmin) / DZ);
+
+        int is_new = (DIM_Y * DIM_Z * ix_new) + (DIM_Z * iy_new) + iz_new;
 
         //prevent from going out of array bounds
-        if (is_new < DIM)
+        //note this may be causing problems! what happens when it goes out of array bounds?
+        if ((ix_new >= 0) && (ix_new < DIM_X) && (iy_new >= 0) && (iy_new < DIM_Y) && (iz_new >= 0) && (iz_new < DIM_Z))
         {
           shiftedDensity[is][ithetap][iphip] = density[is_new];
         }
@@ -46,7 +48,6 @@ void freeStream(float *density, float ***shiftedDensity, float xmin, float ymin,
 void convertInitialDensity(float *initialEnergyDensity, float *density)
 {
   float norm_factor = 1.0; //the normalization constant relating the intial energy density to the intial density profile H^(0,0)
-  //#pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     density[is] = initialEnergyDensity[is] / norm_factor;
