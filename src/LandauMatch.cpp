@@ -52,6 +52,8 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
+  float tolerance = 1e18; //set quantities to zero which are less than 10^(-18)
+
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
@@ -121,17 +123,22 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         //double euclideanLength = v0*v0 + v1*v1 + v2*v2 + v3*v3; //gsl normalizes eigenvectors to euclideanLength = 1; this is just a check
         double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
         double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
-        v0 = scaleFactor * v0;
-        v1 = scaleFactor * v1;
-        v2 = scaleFactor * v2;
-        v3 = scaleFactor * v3;
         //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
         //set values of energy density and flow velocity
+
+        if (GSL_REAL(eigenvalue) * tolerance <= 1.0) //regulate dilute regions
+        {
+          energyDensity[is] = 0.0;
+          flowVelocity[0][is] = 0.0;
+          flowVelocity[1][is] = 0.0;
+          flowVelocity[2][is] = 0.0;
+          flowVelocity[3][is] = 0.0;
+        }
         energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
-        flowVelocity[0][is] = v0;
-        flowVelocity[1][is] = v1;
-        flowVelocity[2][is] = v2;
-        flowVelocity[3][is] = v3;
+        flowVelocity[0][is] = v0 * scaleFactor;
+        flowVelocity[1][is] = v1 * scaleFactor;
+        flowVelocity[2][is] = v2 * scaleFactor;
+        flowVelocity[3][is] = v3 * scaleFactor;
       }
     }
   }
