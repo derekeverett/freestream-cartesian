@@ -10,11 +10,11 @@ void writeScalarToFile(float *var, char name[255])
   char filename[255] = "";
   sprintf(filename, "output/%s.dat", name);
   myfile.open(filename);
-  for (int ix = 0; ix < DIM_X; ix++)
+  for (int iz = 0; iz < DIM_Z; iz++)
   {
     for (int iy = 0; iy < DIM_Y; iy++)
     {
-      for (int iz = 0; iz < DIM_Z; iz++)
+      for (int ix = 0; ix < DIM_X; ix++)
       {
         float x = (float)ix * DX  - (((float)(DIM_X-1)) / 2.0 * DX);
         x = DX * roundf(x / DX);
@@ -40,11 +40,11 @@ void writeVectorToFile(float **var, char name[255], int idx)
   char filename[255] = "";
   sprintf(filename, "output/%s.dat", name);
   myfile.open(filename);
-  for (int ix = 0; ix < DIM_X; ix++)
+  for (int iz = 0; iz < DIM_Z; iz++)
   {
     for (int iy = 0; iy < DIM_Y; iy++)
     {
-      for (int iz = 0; iz < DIM_Z; iz++)
+      for (int ix = 0; ix < DIM_X; ix++)
       {
         float x = (float)ix * DX  - (((float)(DIM_X-1)) / 2.0 * DX);
         x = DX * roundf(x / DX); //rounding for regularly spaced values
