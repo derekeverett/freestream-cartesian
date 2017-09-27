@@ -1,0 +1,99 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      3028,         89]
+NotebookOptionsPosition[      2697,         72]
+NotebookOutlinePosition[      3057,         88]
+CellTagsIndexPosition[      3014,         85]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"hbarc", " ", "=", " ", "0.197326938"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+  "outputDir", " ", "=", " ", 
+   "\"\</Users/derek/github/freestream-cartesian/output\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"initEnergdyDensity", " ", "=", " ", 
+   RowBox[{"Import", "[", 
+    RowBox[{"outputDir", "<>", "\"\</e.dat\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"initEnergyDensityInterp", " ", "=", " ", 
+   RowBox[{"Interpolation", "[", 
+    RowBox[{"initEnergyDensity", ",", " ", 
+     RowBox[{"InterpolationOrder", "\[Rule]", "3"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"xlim", " ", "=", " ", "5.0"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"zlim", " ", "=", " ", "5.0"}], 
+  ";"}], "\[IndentingNewLine]"}], "Input",
+ CellChangeTimes->{{3.7154618056553793`*^9, 3.715461868804237*^9}, {
+   3.715461903038254*^9, 3.715462131921674*^9}, {3.7154621682596817`*^9, 
+   3.715462186842441*^9}, {3.715462928621413*^9, 3.715462933939764*^9}, {
+   3.715464970092477*^9, 3.715465002516259*^9}, {3.7154651083585567`*^9, 
+   3.7154651187271976`*^9}, {3.71546519195448*^9, 3.7154651944245768`*^9}, {
+   3.715465235202869*^9, 3.715465246135223*^9}, {3.7154654531768084`*^9, 
+   3.7154654823618183`*^9}, {3.715465521010944*^9, 3.7154655232169733`*^9}, 
+   3.7154655846747417`*^9}],
+
+Cell[BoxData[
+ FormBox[
+  TemplateBox[{
+   "Interpolation","innd",
+    "\"First argument in \\!\\(\\*FormBox[\\\"initEnergyDensity\\\", \
+TraditionalForm]\\) does not contain a list of data and coordinates.\"",2,88,
+    24,26276800698119740430,"Local"},
+   "MessageTemplate"], TraditionalForm]], "Message", "MSG",
+ CellChangeTimes->{
+  3.715462197386921*^9, 3.715462940769743*^9, 3.715464105730381*^9, 
+   3.7154645077989187`*^9, {3.7154649847260857`*^9, 3.715464996282453*^9}, {
+   3.715465113618648*^9, 3.715465125385068*^9}, 3.7154651986073513`*^9, {
+   3.715465249035253*^9, 3.715465270169011*^9}, {3.715465470217054*^9, 
+   3.71546548471874*^9}, 3.715465549767744*^9, 3.715465588133657*^9}]
+}, Open  ]]
+},
+WindowSize->{978, 879},
+WindowMargins->{{Automatic, 103}, {Automatic, 30}},
+FrontEndVersion->"11.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September \
+21, 2016)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 1403, 32, 159, "Input"],
+Cell[1986, 56, 695, 13, 24, "Message"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
