@@ -57,10 +57,12 @@ int main(void)
   float **shearTensor;
   shearTensor = calloc2dArray(shearTensor, 6, DIM); //calculate 6 components, can check tracelessness for accuracy
 
-  //initialize energy density; here we use gaussian for testing
+  //initialize energy density
   printf("setting initial conditions on energy density\n");
-  initializeGauss(initialEnergyDensity, 1.0);
-  //initializeMCGauss(initialEnergyDensity, 1.0)
+  //initializeGauss(initialEnergyDensity, 1.0);
+  //initializeMCGauss(initialEnergyDensity, 1.0);
+  //initializeEllipticalGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+  initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
 
   //write initial profile to file
   writeScalarToFile(initialEnergyDensity, "initial_e");
