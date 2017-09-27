@@ -25,7 +25,7 @@ void writeScalarToFile(float *var, char name[255])
 
         int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
 
-        myfile << x << "\t" << y << "\t" << z << "\t" << var[is] << "\n";
+        myfile << x << " " << y << " " << z << " " << var[is] << "\n";
       }
     }
   }
@@ -55,7 +55,7 @@ void writeVectorToFile(float **var, char name[255], int idx)
 
         int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
 
-        myfile << x << "\t" << y << "\t" << z << "\t" << var[idx][is] << "\n";
+        myfile << x << " " << y << " " << z << " " << var[idx][is] << "\n";
       }
     }
   }
@@ -78,7 +78,7 @@ void writeScalarToFileProjection(float *var, char name[255])
     {
       int iz = (DIM_Z - 1) / 2; // at z = 0
       int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
-      myfile << var[is] << "\t"; //different columns for y values
+      myfile << var[is] << " "; //different columns for y values
     }
     myfile << "\n"; // different rows correspond to different x values
   }
@@ -99,7 +99,7 @@ void writeVectorToFileProjection(float **var, char name[255], int idx)
     {
       int iz = (DIM_Z - 1) / 2; //at z = 0
       int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
-      myfile << var[idx][is] << "\t"; //different columns for y values
+      myfile << var[idx][is] << " "; //different columns for y values
     }
     myfile << "\n"; // different rows correspond to different x values
   }
