@@ -60,9 +60,11 @@ int main(void)
   //initialize energy density; here we use gaussian for testing
   printf("setting initial conditions on energy density\n");
   initializeGauss(initialEnergyDensity, 1.0);
+  //initializeMCGauss(initialEnergyDensity, 1.0)
 
   //write initial profile to file
-  writeVarToFileProjection(initialEnergyDensity, "initial_energy_density_projection");
+  writeScalarToFile(initialEnergyDensity, "initial_e");
+  writeScalarToFileProjection(initialEnergyDensity, "initial_e_projection");
 
   //read in the initial energy density profile (from file)
   //readInitialEnergyDensity(initialEnergyDensity);
@@ -107,10 +109,13 @@ int main(void)
   calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor);
 
   printf("writing hydro variables to file\n");
-  writeVarToFile(energyDensity, "energy_density");
-  writeVarToFile(pressure, "pressure");
-  writeVarToFile(bulkPressure, "bulk_pressure");
-  writeVarToFileProjection(energyDensity, "energy_density_projection");
+  writeScalarToFile(energyDensity, "e");
+  writeScalarToFile(pressure, "p");
+  writeScalarToFile(bulkPressure, "bulk_PI");
+  writeScalarToFileProjection(energyDensity, "e_projection");
+  writeVectorToFile(flowVelocity, "u_x", 1);
+  writeVectorToFile(flowVelocity, "u_y", 2);
+  writeVectorToFile(flowVelocity, "u_z", 3);
 
   //free the memory
   free(initialEnergyDensity);

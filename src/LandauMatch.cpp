@@ -6,6 +6,8 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
+
+#define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance 
 void calculateTrigTable(float ***trigTable)
 {
   for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
@@ -126,7 +128,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
         //set values of energy density and flow velocity
 
-        if (GSL_REAL(eigenvalue) * tolerance <= 1.0) //regulate dilute regions
+        if ((REGULATE) && (GSL_REAL(eigenvalue) * tolerance <= 1.0)) //regulate dilute regions
         {
           energyDensity[is] = 0.0;
           flowVelocity[0][is] = 0.0;
