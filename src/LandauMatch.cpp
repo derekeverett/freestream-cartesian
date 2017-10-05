@@ -7,7 +7,7 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
 
-#define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance 
+#define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
 void calculateTrigTable(float ***trigTable)
 {
   for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
@@ -147,6 +147,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 }
 void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pressure, float *bulkPressure)
 {
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     // PI = -1/3 * (T^(mu)_(mu) - epsilon) - p
@@ -157,9 +158,11 @@ void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pr
 }
 void calculateShearViscTensor(float **stressTensor, float *energyDensity, float **flowVelocity, float *pressure, float *bulkPressure, float **shearTensor)
 {
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     // pi^(mu,nu) = T^(mu,nu) - epsilon * u^(mu)u^(nu) + (P + PI) * (g^(mu,nu) - u^(mu)u^(nu))
+    //calculate ten components - upper triangular part 
     float c = energyDensity[is] + pressure[is] + bulkPressure[is];
     shearTensor[0][is] = stressTensor[1][is] - flowVelocity[0][is] * flowVelocity[1][is] * c; //pi^(0,1)
     shearTensor[1][is] = stressTensor[2][is] - flowVelocity[0][is] * flowVelocity[2][is] * c; //pi^(0,2)
