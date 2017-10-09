@@ -54,7 +54,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
-  float tolerance = 1e18; //set quantities to zero which are less than 10^(-18)
+  float tolerance = 1e10; //set quantities to zero which are less than 10^(-10)
 
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
@@ -131,7 +131,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         if ((REGULATE) && (GSL_REAL(eigenvalue) * tolerance <= 1.0)) //regulate dilute regions
         {
           energyDensity[is] = 0.0;
-          flowVelocity[0][is] = 0.0;
+          flowVelocity[0][is] = 1.0;
           flowVelocity[1][is] = 0.0;
           flowVelocity[2][is] = 0.0;
           flowVelocity[3][is] = 0.0;
