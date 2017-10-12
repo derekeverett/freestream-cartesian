@@ -6,7 +6,7 @@
 // 1 : Smooth Oblate Gaussian
 // 2 : Fluctuating Oblate Gaussian
 // 3 : read in from data file in whitespace delimited format : x y z n_B(x,y,z)
-#define BARYON 1 //if true, code will freestream baryon current as well as stress tensor
+#define BARYON 0 //if true, code will freestream baryon current as well as stress tensor
 #define IC_ENERGY 1
 #define IC_BARYON 1
 #define PI 3.141592654f //question bro?

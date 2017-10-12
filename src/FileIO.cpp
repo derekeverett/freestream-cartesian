@@ -105,3 +105,36 @@ void writeVectorToFileProjection(float **var, char name[255], int idx)
   }
   myfile.close();
 }
+//use this function to read in initial energy density or baryon density profile
+//format should be whitespace delimited : x   y   z   value(x,y,z)
+void readDensityFile(float *density, char name[255])
+{
+  float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
+  float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
+  float zmin = (-1.0) * ((float)(DIM_Z-1) / 2.0) * DZ;
+
+  char filename[255] = "";
+  sprintf(filename, "%s.dat", name);
+  std::ifstream infile;
+  infile.open(filename);
+  for (int irow = 0; irow < DIM; irow++)
+  {
+    float x;
+    float y;
+    float z;
+    float value;
+
+    infile >> x;
+    infile >> y;
+    infile >> z;
+    infile >> value; //can be either the energy density or baryon density
+
+    int ix = (int)round((x - xmin) / DX);
+    int iy = (int)round((y - ymin) / DY);
+    int iz = (int)round((z - zmin) / DZ);
+    int is = (DIM_Y * DIM_Z * ix) + (DIM_Z * iy) + iz;
+
+    density[is] = value;
+  }
+  infile.close();
+}

@@ -87,6 +87,11 @@ int main(void)
     initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 0.5);
     printf("Fluctuating Oblate Gaussian \n");
   }
+  else if (IC_ENERGY == 3)
+  {
+    readDensityFile(initialEnergyDensity, "initial_profiles/e.dat");
+    printf("Reading from energy density file in initial_profiles/ \n");
+  }
   else
   {
     printf("Not a valid initial Condition... Goodbye\n");
@@ -106,6 +111,11 @@ int main(void)
     {
       initializeEllipticalMCGauss(initialChargeDensity, 0.5, 1.0, 0.5);
       printf("Fluctuating Oblate Gaussian \n");
+    }
+    else if (IC_BARYON == 3)
+    {
+      readDensityFile(initialChargeDensity, "initial_profiles/nB.dat");
+      printf("Reading from baryon density file in initial_profiles/ \n");
     }
     else
     {
