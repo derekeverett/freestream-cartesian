@@ -47,7 +47,8 @@ void freeStream(float *density, float ***shiftedDensity)
 }
 void convertInitialDensity(float *initialEnergyDensity, float *density)
 {
-  float norm_factor = 1.0 / (4.0 * PI); //the normalization constant relating the intial energy density to the intial density profile G^(0,0)
+  float norm_factor = 1.0 / (4.0 * PI); //the normalization constant
+  //relating the intial energy /baryon density to the intial density profile G^(0,0) or J^0
   for (int is = 0; is < DIM; is++)
   {
     density[is] = initialEnergyDensity[is] * norm_factor;

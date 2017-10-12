@@ -46,12 +46,38 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
         {
           //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
           //note trigTable[10][ithetap][iphip] = sin(thetap), calculated in calculateTrigTable
-          stressTensor[ivar][is] += shiftedDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip] * d_thetap * d_phip;
+          stressTensor[ivar][is] += shiftedDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip];
         }
       }
+      stressTensor[ivar][is] = stressTensor[ivar][is] * d_thetap * d_phip; //multiply by differemtial once
     }
   }
 }
+
+void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity, float ***trigTable)
+{
+  float d_thetap = PI / float(DIM_THETAP);
+  float d_phip = (2.0 * PI) / float(DIM_PHIP);
+
+  for (int ivar = 0; ivar < 4; ivar++) //four components
+  {
+    #pragma omp parallel for simd
+    for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
+    {
+      for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
+      {
+        for (int iphip = 0; iphip < DIM_PHIP; iphip++)
+        {
+          //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
+          //note trigTable[10][ithetap][iphip] = sin(thetap), calculated in calculateTrigTable
+          baryonCurrent[ivar][is] += shiftedChargeDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip];
+        }
+      }
+      baryonCurrent[ivar][is] = baryonCurrent[ivar][is] * d_thetap * d_phip; //multiply by differential once
+    }
+  }
+}
+
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
   float tolerance = 1e18; //set quantities to zero which are less than 10^(-18)
@@ -207,5 +233,27 @@ void calculateShearViscTensor(float **stressTensor, float *energyDensity, float 
     shearTensor[7][is] = stressTensor[7][is] - flowVelocity[2][is] * flowVelocity[2][is] * b - c; //pi^(2,2)
     shearTensor[8][is] = stressTensor[8][is] - flowVelocity[2][is] * flowVelocity[3][is] * b; //pi^(2,3)
     shearTensor[9][is] = stressTensor[9][is] - flowVelocity[3][is] * flowVelocity[3][is] * b - c; //pi^(3,3)
+  }
+}
+
+// n_B = u^(mu)j_(mu)
+void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float **flowVelocity)
+{
+  #pragma omp parallel for simd
+  for (int is = 0; is < DIM; is++)
+  {
+    baryonDensity[is] = flowVelocity[0][is] * baryonCurrent[0][is] - (flowVelocity[1][is] * baryonCurrent[1][is] + flowVelocity[2][is] * baryonCurrent[2][is] + flowVelocity[3][is] * baryonCurrent[3][is]);
+  }
+}
+// V^(mu) = j^(mu) - n_B * u^(mu)
+void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, float *baryonDensity, float **flowVelocity)
+{
+  for (int ivar = 0; ivar < 4; ivar++)
+  {
+    #pragma omp parallel for simd
+    for (int is = 0; is < DIM; is++)
+    {
+      baryonDiffusion[ivar][is] = baryonCurrent[ivar][is] - (baryonDensity[is] * flowVelocity[ivar][is]);
+    }
   }
 }
