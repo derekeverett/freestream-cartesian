@@ -72,15 +72,15 @@ void writeScalarToFileProjection(float *var, char name[255])
   char filename[255] = "";
   sprintf(filename, "output/%s.dat", name);
   myfile.open(filename);
-  for (int ix = 0; ix < DIM_X; ix++)
+  for (int iy = 0; iy < DIM_Y; iy++)
   {
-    for (int iy = 0; iy < DIM_Y; iy++)
+    for (int ix = 0; ix < DIM_X; ix++)
     {
       int iz = (DIM_Z - 1) / 2; // at z = 0
       int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
-      myfile << var[is] << " "; //different columns for y values
+      myfile << var[is] << " "; //different columns for x values
     }
-    myfile << "\n"; // different rows correspond to different x values
+    myfile << "\n"; // different rows correspond to different y values
   }
   myfile.close();
 }
@@ -93,15 +93,15 @@ void writeVectorToFileProjection(float **var, char name[255], int idx)
   char filename[255] = "";
   sprintf(filename, "output/%s.dat", name);
   myfile.open(filename);
-  for (int ix = 0; ix < DIM_X; ix++)
+  for (int iy = 0; iy < DIM_Y; iy++)
   {
-    for (int iy = 0; iy < DIM_Y; iy++)
+    for (int ix = 0; ix < DIM_X; ix++)
     {
       int iz = (DIM_Z - 1) / 2; //at z = 0
       int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
-      myfile << var[idx][is] << " "; //different columns for y values
+      myfile << var[idx][is] << " "; //different columns for x values
     }
-    myfile << "\n"; // different rows correspond to different x values
+    myfile << "\n"; // different rows correspond to different y values
   }
   myfile.close();
 }

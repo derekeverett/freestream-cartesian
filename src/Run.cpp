@@ -26,27 +26,35 @@ int main(void)
 
   //allocate and initialize memory
   printf("Allocating memory\n");
+
   //the initial energy density spatial profile
   float *initialEnergyDensity;
   initialEnergyDensity = (float *)calloc(DIM, sizeof(float));
+
   //the initial baryon density spatial profile
   float *initialChargeDensity;
   initialChargeDensity = (float *)calloc(DIM, sizeof(float));
+
   //the initial density G^(0,0) at time t0
   float *density;
   density = (float *)calloc(DIM, sizeof(float));
+
   //the initial density J^0 at time t0
   float *chargeDensity;
   chargeDensity = (float *)calloc(DIM, sizeof(float));
+
   //the shifted density profile G^(0,0) at time t
   float ***shiftedDensity;
   shiftedDensity = calloc3dArray(shiftedDensity, DIM, DIM_THETAP, DIM_PHIP);
+
   //the shifted baryon density profile J^0 at time t
   float ***shiftedChargeDensity;
   shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, DIM, DIM_THETAP, DIM_PHIP);
+
   //the ten independent components of the stress tensor
   float **stressTensor;
   stressTensor = calloc2dArray(stressTensor, 10, DIM);
+
   //four components of baryon number current four-vector
   float **baryonCurrent;
   baryonCurrent = calloc2dArray(baryonCurrent, 4, DIM);
@@ -55,36 +63,46 @@ int main(void)
   trigTable = calloc3dArray(trigTable, 11, DIM_THETAP, DIM_PHIP);
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
+
   //the energy density
   float *energyDensity;
   energyDensity = (float *)calloc(DIM, sizeof(float));
+
   //the baryon density
   float *baryonDensity;
   baryonDensity = (float *)calloc(DIM, sizeof(float));
+
   //the flow velocity
   float **flowVelocity;
   flowVelocity = calloc2dArray(flowVelocity, 4, DIM);
+
   //the pressure
   float *pressure;
   pressure = (float *)calloc(DIM, sizeof(float));
+
+  //the bulk pressure
   float *bulkPressure;
   bulkPressure = (float *)calloc(DIM, sizeof(float));
+
+  //the shear viscous tensor
   float **shearTensor;
   shearTensor = calloc2dArray(shearTensor, 10, DIM); //calculate 10 components; can check tracelessness
   // and orthogonality later as a consistency check
+
   //the baryon diffusion current vector
   float **baryonDiffusion;
   baryonDiffusion = calloc2dArray(baryonDiffusion, 4, DIM);
+
   //initialize energy density
   printf("setting initial conditions on energy density : ");
   if (IC_ENERGY == 1)
   {
-    initializeEllipticalGauss(initialEnergyDensity, 0.5, 1.0, 0.5);
+    initializeEllipticalGauss(initialEnergyDensity, 1.0, 1.0, 1.0);
     printf("Smooth Oblate Gaussian \n");
   }
   else if (IC_ENERGY == 2)
   {
-    initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 0.5);
+    initializeEllipticalMCGauss(initialEnergyDensity, 1.0, 1.0, 1.0);
     printf("Fluctuating Oblate Gaussian \n");
   }
   else if (IC_ENERGY == 3)
@@ -104,12 +122,12 @@ int main(void)
     printf("setting initial conditions on baryon density : ");
     if (IC_BARYON == 1)
     {
-      initializeEllipticalGauss(initialChargeDensity, 0.5, 1.0, 0.5);
+      initializeEllipticalGauss(initialChargeDensity, 1.0, 1.0, 1.0);
       printf("Smooth Oblate Gaussian \n");
     }
     else if (IC_BARYON == 2)
     {
-      initializeEllipticalMCGauss(initialChargeDensity, 0.5, 1.0, 0.5);
+      initializeEllipticalMCGauss(initialChargeDensity, 1.0, 1.0, 1.0);
       printf("Fluctuating Oblate Gaussian \n");
     }
     else if (IC_BARYON == 3)
@@ -133,6 +151,7 @@ int main(void)
   convertInitialDensity(initialEnergyDensity, density);
   //convert baryon density profile into initial profile J^0 to be streamed - just a normalization
   if (BARYON) convertInitialDensity(initialChargeDensity, chargeDensity);
+
   //perform the free streaming time-update step
   //pretabulate trig functions before this step to save time?
   printf("performing the free streaming time step\n");
@@ -143,7 +162,7 @@ int main(void)
   sec = omp_get_wtime() - sec;
   printf("Free streaming took %f seconds\n", sec);
 
-  //Landau matching to find the components of energy-momentum tensor and baryon current
+  //Landau matching to find the components of stress tensor and baryon current
   printf("Landau matching to find hydrodynamic variables\n");
 
   calculateTrigTable(trigTable);
@@ -163,10 +182,6 @@ int main(void)
   sec = omp_get_wtime() - sec;
   printf("solving eigenvalue problem took %f seconds\n", sec);
 
-  calculatePressure(energyDensity, pressure);
-  calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure);
-  calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor);
-
   if (BARYON)
   {
     printf("calculating independent components of baryon current\n");
@@ -179,6 +194,11 @@ int main(void)
     calculateBaryonDiffusion(baryonDiffusion, baryonCurrent, baryonDensity, flowVelocity);
   }
 
+  //need EoS which includes baryon number!!! fix this
+  calculatePressure(energyDensity, pressure);
+  calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure);
+  calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor);
+
   printf("writing hydro variables to file\n");
   writeScalarToFile(energyDensity, "e");
   writeScalarToFile(pressure, "p");
@@ -187,13 +207,20 @@ int main(void)
   writeVectorToFile(flowVelocity, "u_x", 1);
   writeVectorToFile(flowVelocity, "u_y", 2);
   writeVectorToFile(flowVelocity, "u_z", 3);
+  writeVectorToFileProjection(flowVelocity, "u_x_projection", 1);
+  writeVectorToFileProjection(flowVelocity, "u_y_projection", 2);
+  writeVectorToFileProjection(flowVelocity, "u_z_projection", 3);
 
   if (BARYON)
   {
     writeScalarToFile(baryonDensity, "nB");
     writeScalarToFileProjection(baryonDensity, "nB_projection");
+    writeVectorToFile(baryonDiffusion, "V_x", 1);
+    writeVectorToFile(baryonDiffusion, "V_y", 2);
+    writeVectorToFile(baryonDiffusion, "V_z", 3);
   }
   //free the memory
+  printf("freeing memory \n");
   free(initialEnergyDensity);
   free(density);
   free3dArray(shiftedDensity, DIM, DIM_THETAP);

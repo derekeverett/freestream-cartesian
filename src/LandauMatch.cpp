@@ -26,7 +26,7 @@ void calculateTrigTable(float ***trigTable)
       trigTable[7][ithetap][iphip] = sin(thetap) * sin(phip) * sin(thetap) * sin(phip); //p_y, p_y
       trigTable[8][ithetap][iphip] = sin(thetap) * sin(phip) * cos(thetap); //p_y, p_z
       trigTable[9][ithetap][iphip] = cos(thetap) * cos(thetap); //p_z, p_z
-      trigTable[10][ithetap][iphip] = sin(thetap); //just sin (thetap), useful for when we calculate stress tensor
+      trigTable[10][ithetap][iphip] = sin(thetap); //just sin (thetap), which appears in differential solid angle
     }
   }
 }
@@ -49,7 +49,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
           stressTensor[ivar][is] += shiftedDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip];
         }
       }
-      stressTensor[ivar][is] = stressTensor[ivar][is] * d_thetap * d_phip; //multiply by differemtial once
+      stressTensor[ivar][is] = stressTensor[ivar][is] * d_thetap * d_phip; //multiply by differential once
     }
   }
 }
@@ -86,7 +86,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   for (int is = 0; is < DIM; is++)
   {
     gsl_matrix *Tmunu; //T^(mu,nu) with two contravariant indices; we need to lower an index
-    //using the metric to find the eigenvectors of T^(mu)_(nu) with one contravariant and one contravariant index
+    //using the metric to find the eigenvectors of T^(mu)_(nu) with one contravariant and one covariant index
     Tmunu = gsl_matrix_alloc(4,4);
     gsl_matrix *gmunu;
     gmunu = gsl_matrix_alloc(4,4);
@@ -136,23 +136,53 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     eigen_workspace = gsl_eigen_nonsymmv_alloc(4);
     gsl_eigen_nonsymmv(Tmunu, eigen_values, eigen_vectors, eigen_workspace);
     gsl_eigen_nonsymmv_free(eigen_workspace);
+    //gsl_eigen_nonsymmv_sort(eigen_values, eigen_vectors, GSL_EIGEN_SORT_ABS_DESC);
+
 
     //***does this have a solution for energy density and flow at every point?
     for (int i = 0; i < 4; i++)
     {
       gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
 
+      //this is the code that Jia Liu uses. Why does it work for him?
+      if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
+      {
+        gsl_complex v0 = gsl_matrix_complex_get(eigen_vectors, 0 , i);
+        gsl_complex v1 = gsl_matrix_complex_get(eigen_vectors, 1 , i);
+        gsl_complex v2 = gsl_matrix_complex_get(eigen_vectors, 2 , i);
+        gsl_complex v3 = gsl_matrix_complex_get(eigen_vectors, 3 , i);
+
+        if (GSL_IMAG(v0) == 0 && (3.0 * GSL_REAL(v0) * GSL_REAL(v0)-1) > 0) //choose eigenvector
+        {
+          //why does he use this as a scaling factor???
+          double factor = sqrt(1.0 / (3.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1));
+          //I think we should scale by minkowski length to get u^(mu)u_(mu) = 1
+          //double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + GSL_REAL(v3)*GSL_REAL(v3));
+          //double factor = 1.0 / sqrt(minkowskiLength);
+
+          if (GSL_REAL(v0) < 0) factor=-factor;
+
+          energyDensity[is] = GSL_REAL(eigenvalue);
+          flowVelocity[0][is] = GSL_REAL(v0) * factor;
+          flowVelocity[1][is] = GSL_REAL(v1) * factor;
+          flowVelocity[2][is] = GSL_REAL(v2) * factor;
+          flowVelocity[3][is] = GSL_REAL(v3) * factor;
+        }
+      }
+
+      /*
       // begin new code that tries to select timelike eigenvector
-      double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 0));
-      double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
-      double v2 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 2));
-      double v3 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 3));
+      //is this correct way to get eigenvectors?
+      double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, 0 , i));
+      double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, 1 , i));
+      double v2 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, 2 , i));
+      double v3 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, 3 , i));
       double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
       double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
       //try selecting timelike eigenvector
       if (minkowskiLength > 0.0)
       {
-        energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
+        energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor;
         //if (energyDensity[is] < 0.0) printf("negative energy density! e = %f\n", energyDensity[is]);
         flowVelocity[0][is] = v0 * scaleFactor;
         flowVelocity[1][is] = v1 * scaleFactor;
@@ -168,6 +198,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
           flowVelocity[3][is] = 0.0;
         }
       }
+      */
       //end new code
 
       //begin old code that checks energy density rather than if flow is timelike
@@ -242,7 +273,7 @@ void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float *
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
-    baryonDensity[is] = flowVelocity[0][is] * baryonCurrent[0][is] - (flowVelocity[1][is] * baryonCurrent[1][is] + flowVelocity[2][is] * baryonCurrent[2][is] + flowVelocity[3][is] * baryonCurrent[3][is]);
+    baryonDensity[is] = (flowVelocity[0][is] * baryonCurrent[0][is]) - (flowVelocity[1][is] * baryonCurrent[1][is]) - (flowVelocity[2][is] * baryonCurrent[2][is]) - (flowVelocity[3][is] * baryonCurrent[3][is]);
   }
 }
 // V^(mu) = j^(mu) - n_B * u^(mu)
