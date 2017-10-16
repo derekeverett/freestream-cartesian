@@ -155,14 +155,14 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         if (GSL_IMAG(v0) == 0 && (3.0 * GSL_REAL(v0) * GSL_REAL(v0)-1) > 0) //choose eigenvector
         {
           //why does he use this as a scaling factor???
-          double factor = sqrt(1.0 / (3.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1));
+          //double factor = sqrt(1.0 / (3.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1));
           //I think we should scale by minkowski length to get u^(mu)u_(mu) = 1
-          //double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + GSL_REAL(v3)*GSL_REAL(v3));
-          //double factor = 1.0 / sqrt(minkowskiLength);
+          double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + GSL_REAL(v3)*GSL_REAL(v3));
+          double factor = 1.0 / sqrt(minkowskiLength);
 
           if (GSL_REAL(v0) < 0) factor=-factor;
 
-          energyDensity[is] = GSL_REAL(eigenvalue);
+          energyDensity[is] = GSL_REAL(eigenvalue) / abs(factor);
           flowVelocity[0][is] = GSL_REAL(v0) * factor;
           flowVelocity[1][is] = GSL_REAL(v1) * factor;
           flowVelocity[2][is] = GSL_REAL(v2) * factor;
