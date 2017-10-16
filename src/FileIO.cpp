@@ -105,6 +105,26 @@ void writeVectorToFileProjection(float **var, char name[255], int idx)
   }
   myfile.close();
 }
+//this function writes a variable as a function of x at y = z = 0.
+void writeVectorToFile1DProjection(float **var, char name[255], int idx)
+{
+  char cwd[1024];
+  getcwd(cwd, sizeof(cwd));
+  std::ofstream myfile;
+  char filename[255] = "";
+  sprintf(filename, "output/%s.dat", name);
+  myfile.open(filename);
+  for (int ix = 0; ix < DIM_X; ix++)
+  {
+    int iz = (DIM_Z - 1) / 2; //at z = 0
+    int iy = (DIM_Y - 1) / 2; //at y = 0
+    int is = (DIM_Y * DIM_Z) * ix + (DIM_Z) * iy + iz; //the column packed index spanning x, y, z
+    myfile << var[idx][is] << "\n";
+  }
+  myfile.close();
+}
+
+
 //use this function to read in initial energy density or baryon density profile
 //format should be whitespace delimited : x   y   z   value(x,y,z)
 void readDensityFile(float *density, char name[255])

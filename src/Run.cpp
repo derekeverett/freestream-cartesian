@@ -210,6 +210,7 @@ int main(void)
   writeVectorToFileProjection(flowVelocity, "u_x_projection", 1);
   writeVectorToFileProjection(flowVelocity, "u_y_projection", 2);
   writeVectorToFileProjection(flowVelocity, "u_z_projection", 3);
+  writeVectorToFile1DProjection(flowVelocity, "u_x_1Dprojection", 1);
 
   if (BARYON)
   {

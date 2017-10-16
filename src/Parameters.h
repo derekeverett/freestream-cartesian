@@ -18,6 +18,6 @@
 #define DIM_PHIP 51 //number of grid points in phi_p momentum azimuthal angle
 #define DX 0.1f //spacing of grid in x direction
 #define DY 0.1f //spacing of grid in y direction
-#define DZ 0.1f //spacing of grid in eta direction
-#define DT 1.5f //free streaming time step size
+#define DZ 0.1f //spacing of grid in z direction
+#define DT 2.0f //free streaming time step size
 #define EOS_TYPE 1 // 1 for conformal EOS, 2 for Wuppertal-Budhapest parameterization
