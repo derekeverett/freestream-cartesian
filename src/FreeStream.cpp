@@ -1,6 +1,6 @@
 #include <math.h>
 
-void freeStream(float *density, float ***shiftedDensity)
+void freeStream(float *density, float ***shiftedDensity, float dt)
 {
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
@@ -25,9 +25,9 @@ void freeStream(float *density, float ***shiftedDensity)
         float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
         //these trig functions could be tabulated ahead of time!
-        float x_new = x - (DT * sin(thetap) * cos(phip));
-        float y_new = y - (DT * sin(thetap) * sin(phip));
-        float z_new = z - (DT * cos(thetap));
+        float x_new = x - (dt * sin(thetap) * cos(phip));
+        float y_new = y - (dt * sin(thetap) * sin(phip));
+        float z_new = z - (dt * cos(thetap));
 
         int ix_new = (int)round((x_new - xmin) / DX);
         int iy_new = (int)round((y_new - ymin) / DY);

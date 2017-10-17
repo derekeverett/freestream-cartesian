@@ -30,7 +30,7 @@ void calculateTrigTable(float ***trigTable)
     }
   }
 }
-void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ***trigTable)
+void calculateStressTensor(float ***timeDependentStressTensor, float ***shiftedDensity, float ***trigTable, int itime)
 {
   float d_thetap = PI / float(DIM_THETAP);
   float d_phip = (2.0 * PI) / float(DIM_PHIP);
@@ -46,15 +46,15 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
         {
           //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
           //note trigTable[10][ithetap][iphip] = sin(thetap), calculated in calculateTrigTable
-          stressTensor[ivar][is] += shiftedDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip];
+          timeDependentStressTensor[ivar][itime][is] += shiftedDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip];
         }
       }
-      stressTensor[ivar][is] = stressTensor[ivar][is] * d_thetap * d_phip; //multiply by differential once
+      timeDependentStressTensor[ivar][itime][is] = timeDependentStressTensor[ivar][itime][is] * d_thetap * d_phip; //multiply by differential once
     }
   }
 }
 
-void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity, float ***trigTable)
+void calculateBaryonCurrent(float ***timeDependentBaryonCurrent, float ***shiftedChargeDensity, float ***trigTable, int itime)
 {
   float d_thetap = PI / float(DIM_THETAP);
   float d_phip = (2.0 * PI) / float(DIM_PHIP);
@@ -70,10 +70,10 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
         {
           //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
           //note trigTable[10][ithetap][iphip] = sin(thetap), calculated in calculateTrigTable
-          baryonCurrent[ivar][is] += shiftedChargeDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip];
+          timeDependentBaryonCurrent[ivar][itime][is] += shiftedChargeDensity[is][ithetap][iphip] * trigTable[ivar][ithetap][iphip] * trigTable[10][ithetap][iphip];
         }
       }
-      baryonCurrent[ivar][is] = baryonCurrent[ivar][is] * d_thetap * d_phip; //multiply by differential once
+      timeDependentBaryonCurrent[ivar][itime][is] = timeDependentBaryonCurrent[ivar][itime][is] * d_thetap * d_phip; //multiply by differential once
     }
   }
 }
