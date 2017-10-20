@@ -172,7 +172,7 @@ int main(void)
   for (int itime = 0; itime < DIM_T; itime++)
   {
     //perform the free streaming time-update steps
-    float dt = itime * DT;  //the streaming time
+    float dt = (itime + 1) * DT;  //the streaming time
     freeStream(density, shiftedDensity, dt);
     if (BARYON) freeStream(chargeDensity, shiftedChargeDensity, dt);
     //calculate the time dependent stress tensor and baryon current
