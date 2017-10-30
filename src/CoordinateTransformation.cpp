@@ -1,9 +1,9 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_spline2d.h>
-#include "Memory.cpp"
+#include <stdio.h>
 
-interpolateToMilneGrid(float ***timeDependentQuantity, float **quantityAtFixedTau, int dimVar)
+void interpolateToMilneGrid(float ***timeDependentQuantity, float **quantityAtFixedTau, int dimVar)
 {
 
   //fill the coordinate arrays with coordinate values
@@ -25,7 +25,7 @@ interpolateToMilneGrid(float ***timeDependentQuantity, float **quantityAtFixedTa
     {
       for (int iy = 0; iy < DIM_Y; iy++) //...must interpolate from t,z to tau,eta at every point in transverse plane
       {
-        float timeDependentArray[DIM_T * DIM_Z];
+        double timeDependentArray[DIM_T * DIM_Z];
         for (int itime = 0; itime < DIM_T; itime++)
         {
           for (int iz = 0; iz < DIM_Z; iz++)
@@ -39,26 +39,35 @@ interpolateToMilneGrid(float ***timeDependentQuantity, float **quantityAtFixedTa
         //now set up the interpolation
         const gsl_interp2d_type *T = gsl_interp2d_bicubic;
         gsl_spline2d *spline = gsl_spline2d_alloc(T, sizeof(tArray) / sizeof(double), sizeof(zArray) / sizeof(double));
-        gsl_spline2d_init(spline, timeArray, zArray, timeDependentArray, sizeof(tArray) / sizeof(double), sizeof(zArray) / sizeof(double));
+        gsl_spline2d_init(spline, tArray, zArray, timeDependentArray, sizeof(tArray) / sizeof(double), sizeof(zArray) / sizeof(double));
         gsl_interp_accel *tacc = gsl_interp_accel_alloc();
         gsl_interp_accel *zacc = gsl_interp_accel_alloc();
 
-        //try interpolating a value near a known value
-        double tnew = tArray[0] + 0.0001
-        double znew = zArray[0] + 0.0001
-        double value = gsl_spline2d_eval(spline, tnew, znew, tacc, zacc);
-        printf("interpolated value is %f \n", value);
+        //evaluate interpolation at regular spaced points in eta and a fixed proper time
+        double etamin = (-1.0) * ((double)(DIM_ETA-1) / 2.0) * DETA;
+        for (int ieta = 0; ieta < DIM_ETA; ieta++)
+        {
+          //find the values of t,z corresponging to regularly spaced eta and fixed tau
+          double eta = (double)ieta * DETA  + etamin;
+          double tnew = TAU * cosh(eta);
+          double znew = TAU * sinh(eta);
+
+          //fill the new variable defined on an eta grid with interpolated values
+          double value = gsl_spline2d_eval(spline, tnew, znew, tacc, zacc);
+          int isnew = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy) + ieta;
+          quantityAtFixedTau[ivar][isnew] = (float)value;
+        }
       }
     }
   }
 }
 
-transformTensorToMilne(stressTensor, stressTensor)
+void transformTensorToMilne(float **Tensor, float **newTensor)
 {
-  
+
 }
 
-transformVectorToMilne(baryonCurrent, baryonCurrent)
+void transformVectorToMilne(float **vector, float **newVector)
 {
 
 }
