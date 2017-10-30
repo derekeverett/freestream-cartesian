@@ -23,4 +23,6 @@
 #define DY 0.1f //spacing of grid in y direction
 #define DZ 0.1f //spacing of grid in z direction
 #define DT 0.05f //free streaming time step size
+#define T0 0.0 //initial cartesian time at which densities are initialized 
+#define TAU 0.5f //final proper time at which Landau Matching is performed in Milne Coordinates
 #define EOS_TYPE 1 // 1 for conformal EOS, 2 for Wuppertal-Budhapest parameterization

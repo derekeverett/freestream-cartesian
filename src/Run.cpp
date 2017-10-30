@@ -7,6 +7,7 @@
 #include "Parameters.h"
 #include "FreeStream.cpp"
 #include "InitialConditions.cpp"
+#include "CoordinateTransform.cpp"
 #include "LandauMatch.cpp"
 #include "EquationOfState.cpp"
 #include "Memory.cpp"
@@ -184,7 +185,13 @@ int main(void)
   printf("Free streaming took and calculating stress tensor (and baryon current) took %f seconds\n", sec);
 
   //interpolate T^(mu,nu) and j^(mu) along a regular grid in spacetime rapidity for a fixed longitudinal proper time
+  printf("Interpolating conserved currents from cartesian -> milne grid and coordinate transforming tensors \n");
+  interpolateToMilneGrid(timeDependentStressTensor, stressTensor);
+  if (BARYON) interpolateToMilneGrid(timeDependentBaryonCurrent, baryonCurrent);
   //and perform appropriate transformations to obtain both quantities in milne coords (e.g. j^(mu) = (J^(tau), j^(x),j^(y),j^(eta)))
+  transformTensorToMilne(stressTensor, stressTensor);
+  if (baryon) transformVectorToMilne(baryonCurrent, baryonCurrent);
+
 
   //solve the eigenvalue problem for the energy density and flow velocity
   printf("solving eigenvalue problem for energy density and flow velocity\n");
