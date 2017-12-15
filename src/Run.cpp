@@ -34,7 +34,7 @@ int main(void)
 
   //the initial baryon density spatial profile in cartesian coords
   float *initialChargeDensity;
-  initialChargeDensity = (float *)calloc(DIM, sizeof(float));
+  if (BARYON) initialChargeDensity = (float *)calloc(DIM, sizeof(float));
 
   //the initial density G^(0,0) at time t0 in cartesian coords
   float *density;
@@ -42,66 +42,7 @@ int main(void)
 
   //the initial density J^0 at time t0 in cartesian coords
   float *chargeDensity;
-  chargeDensity = (float *)calloc(DIM, sizeof(float));
-
-  //the shifted density profile G^(0,0) at time t in cartesian coords
-  float ***shiftedDensity;
-  shiftedDensity = calloc3dArray(shiftedDensity, DIM, DIM_THETAP, DIM_PHIP);
-
-  //the shifted baryon density profile J^0 at time t in cartesian coords
-  float ***shiftedChargeDensity;
-  shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, DIM, DIM_THETAP, DIM_PHIP);
-
-  //the stress tensor as a function of cartesian time and z
-  float ***timeDependentStressTensor;
-  timeDependentStressTensor = calloc3dArray(timeDependentStressTensor, 10, DIM_T, DIM);
-  //the baryon current as a function of cartesian time and z
-  float ***timeDependentBaryonCurrent;
-  timeDependentBaryonCurrent = calloc3dArray(timeDependentBaryonCurrent, 4, DIM_T, DIM);
-
-  //the ten components of the final stress tensor in milne coords
-  //must be constructed by interpolating T(t,z) on a regular grid in t,z to a
-  //regular grid in eta, evaluated at a fixed proper time.
-  float **stressTensor;
-  stressTensor = calloc2dArray(stressTensor, 10, DIM_MILNE);
-
-  //four components of the final baryon number current four-vector in milne coords
-  float **baryonCurrent;
-  baryonCurrent = calloc2dArray(baryonCurrent, 4, DIM_MILNE);
-  //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu) normalized by energy
-  float ***trigTable;
-  trigTable = calloc3dArray(trigTable, 11, DIM_THETAP, DIM_PHIP);
-
-  //variables to store the hydrodynamic variables after the Landau matching is performed
-
-  //the energy density in milne coords
-  float *energyDensity;
-  energyDensity = (float *)calloc(DIM_MILNE, sizeof(float));
-
-  //the baryon density in milne coords
-  float *baryonDensity;
-  baryonDensity = (float *)calloc(DIM_MILNE, sizeof(float));
-
-  //the flow velocity in milne coords
-  float **flowVelocity;
-  flowVelocity = calloc2dArray(flowVelocity, 4, DIM_MILNE);
-
-  //the pressure in milne coords
-  float *pressure;
-  pressure = (float *)calloc(DIM_MILNE, sizeof(float));
-
-  //the bulk pressure in milne coords
-  float *bulkPressure;
-  bulkPressure = (float *)calloc(DIM_MILNE, sizeof(float));
-
-  //the shear viscous tensor in milne coords
-  float **shearTensor;
-  shearTensor = calloc2dArray(shearTensor, 10, DIM_MILNE); //calculate 10 components; can check tracelessness
-  // and orthogonality later as a consistency check
-
-  //the baryon diffusion current vector in milne coords
-  float **baryonDiffusion;
-  baryonDiffusion = calloc2dArray(baryonDiffusion, 4, DIM_MILNE);
+  if (BARYON) chargeDensity = (float *)calloc(DIM, sizeof(float));
 
   //initialize energy density in cartesian coordinates
   printf("setting initial conditions on energy density : ");
@@ -162,11 +103,32 @@ int main(void)
   //convert baryon density profile into initial profile J^0 to be streamed - just a normalization
   if (BARYON) convertInitialDensity(initialChargeDensity, chargeDensity);
 
+  //free initialEnergyDensity and initialCharge Density here, and allocate trigTable, shiftedDensity and shiftedChargeDensity
+  //also declare time dependent stress tensor and baryon current
+  free(initialEnergyDensity);
+  if (BARYON) free(initialChargeDensity);
+  //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu) normalized by energy
+  float ***trigTable;
+  trigTable = calloc3dArray(trigTable, 11, DIM_THETAP, DIM_PHIP);
+  //the shifted density profile G^(0,0) at time t in cartesian coords
+  float ***shiftedDensity;
+  shiftedDensity = calloc3dArray(shiftedDensity, DIM, DIM_THETAP, DIM_PHIP);
+  //the shifted baryon density profile J^0 at time t in cartesian coords
+  float ***shiftedChargeDensity;
+  if (BARYON) shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, DIM, DIM_THETAP, DIM_PHIP);
+  //the stress tensor as a function of cartesian time and z
+  float ***timeDependentStressTensor;
+  timeDependentStressTensor = calloc3dArray(timeDependentStressTensor, 10, DIM_T, DIM);
+  //the baryon current as a function of cartesian time and z
+  float ***timeDependentBaryonCurrent;
+  if (BARYON) timeDependentBaryonCurrent = calloc3dArray(timeDependentBaryonCurrent, 4, DIM_T, DIM);
+
   //calculate trig table to speed up calculation of stress tensor and baryon current
   calculateTrigTable(trigTable);
 
   double sec;
-  printf("performing the free streaming and calculating stress tensor (and baryon current) \n");
+  printf("performing the free streaming and calculating stress tensor... \n");
+  if (BARYON) printf("...and baryon current\n");
   sec = omp_get_wtime();
 
   //main time step loop for free-streaming
@@ -182,16 +144,69 @@ int main(void)
     printf("time step %d finished\n", itime);
   }
   sec = omp_get_wtime() - sec;
-  printf("Free streaming took and calculating stress tensor (and baryon current) took %f seconds\n", sec);
+  printf("Free streaming took and calculating stress tensor");
+  if (BARYON) printf(" and baryon current ");
+  printf(" took %f seconds \n", sec);
+
+  // free trigTable, density, shiftedDensity, chargeDensity, shiftedChargeDensity
+  //allocate stressTensor, baryonCurrent
+  free3dArray(trigTable, 11, DIM_THETAP);
+  free(density);
+  if (BARYON) free(chargeDensity);
+  free3dArray(shiftedDensity, DIM, DIM_THETAP);
+  if (BARYON) free3dArray(shiftedChargeDensity, DIM, DIM_THETAP);
+
+  //the ten components of the final stress tensor in milne coords
+  //must be constructed by interpolating T(t,z) on a regular grid in t,z to a
+  //regular grid in eta, evaluated at a fixed proper time.
+  float **stressTensor;
+  stressTensor = calloc2dArray(stressTensor, 10, DIM_MILNE);
+  //four components of the final baryon number current four-vector in milne coords
+  float **baryonCurrent;
+  baryonCurrent = calloc2dArray(baryonCurrent, 4, DIM_MILNE);
 
   //interpolate T^(mu,nu) and j^(mu) along a regular grid in spacetime rapidity for a fixed longitudinal proper time
   printf("Interpolating conserved currents from cartesian -> milne grid and coordinate transforming tensors \n");
   interpolateToMilneGrid(timeDependentStressTensor, stressTensor, 10);
   if (BARYON) interpolateToMilneGrid(timeDependentBaryonCurrent, baryonCurrent, 4);
+  //free timeDependentStressTensor and timeDependentBaryonCurrent
+  free3dArray(timeDependentStressTensor, 10, DIM_T);
+  if (BARYON) free3dArray(timeDependentBaryonCurrent, 4, DIM_T);
+
   //and perform appropriate transformations to obtain both quantities in milne coords (e.g. j^(mu) = (J^(tau), j^(x),j^(y),j^(eta)))
   transformTensorToMilne(stressTensor, stressTensor);
   if (BARYON) transformVectorToMilne(baryonCurrent, baryonCurrent);
 
+  //variables to store the hydrodynamic variables after the Landau matching is performed
+
+  //the energy density in milne coords
+  float *energyDensity;
+  energyDensity = (float *)calloc(DIM_MILNE, sizeof(float));
+
+  //the baryon density in milne coords
+  float *baryonDensity;
+  baryonDensity = (float *)calloc(DIM_MILNE, sizeof(float));
+
+  //the flow velocity in milne coords
+  float **flowVelocity;
+  flowVelocity = calloc2dArray(flowVelocity, 4, DIM_MILNE);
+
+  //the pressure in milne coords
+  float *pressure;
+  pressure = (float *)calloc(DIM_MILNE, sizeof(float));
+
+  //the bulk pressure in milne coords
+  float *bulkPressure;
+  bulkPressure = (float *)calloc(DIM_MILNE, sizeof(float));
+
+  //the shear viscous tensor in milne coords
+  float **shearTensor;
+  shearTensor = calloc2dArray(shearTensor, 10, DIM_MILNE); //calculate 10 components; can check tracelessness
+  // and orthogonality later as a consistency check
+
+  //the baryon diffusion current vector in milne coords
+  float **baryonDiffusion;
+  baryonDiffusion = calloc2dArray(baryonDiffusion, 4, DIM_MILNE);
 
   //solve the eigenvalue problem for the energy density and flow velocity
   printf("solving eigenvalue problem for energy density and flow velocity\n");
@@ -200,23 +215,13 @@ int main(void)
   sec = omp_get_wtime() - sec;
   printf("solving eigenvalue problem took %f seconds\n", sec);
 
-  if (BARYON)
-  {
-    printf("calculating independent components of baryon current\n");
-    sec = omp_get_wtime();
-
-    sec = omp_get_wtime() - sec;
-    printf("calculating baryon current took %f seconds\n", sec);
-
-    calculateBaryonDensity(baryonDensity, baryonCurrent, flowVelocity);
-    calculateBaryonDiffusion(baryonDiffusion, baryonCurrent, baryonDensity, flowVelocity);
-  }
+  if (BARYON) calculateBaryonDensity(baryonDensity, baryonCurrent, flowVelocity);
 
   //need EoS which includes baryon number!!! fix this
   calculatePressure(energyDensity, pressure);
   calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure);
   calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor);
-
+  if (BARYON) calculateBaryonDiffusion(baryonDiffusion, baryonCurrent, baryonDensity, flowVelocity);
   printf("writing hydro variables to file\n");
   writeScalarToFile(energyDensity, "e");
   writeScalarToFile(pressure, "p");
@@ -240,11 +245,7 @@ int main(void)
   }
   //free the memory
   printf("freeing memory \n");
-  free(initialEnergyDensity);
-  free(density);
-  free3dArray(shiftedDensity, DIM, DIM_THETAP);
   free2dArray(stressTensor, 10);
-  free3dArray(trigTable, 11, DIM_THETAP);
   free(energyDensity);
   free2dArray(flowVelocity, 4);
   free(pressure);
@@ -253,9 +254,6 @@ int main(void)
 
   if (BARYON)
   {
-    free(initialChargeDensity);
-    free(chargeDensity);
-    free3dArray(shiftedChargeDensity, DIM, DIM_THETAP);
     free2dArray(baryonCurrent, 4);
     free(baryonDensity);
     free2dArray(baryonDiffusion, 4);
