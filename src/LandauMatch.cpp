@@ -37,7 +37,7 @@ void calculateStressTensor(float ***timeDependentStressTensor, float ***shiftedD
 
   for (int ivar = 0; ivar < 10; ivar++) //ten independent components
   {
-    #pragma omp parallel for simd
+    #pragma omp parallel for
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
@@ -61,7 +61,7 @@ void calculateBaryonCurrent(float ***timeDependentBaryonCurrent, float ***shifte
 
   for (int ivar = 0; ivar < 4; ivar++) //four components
   {
-    #pragma omp parallel for simd
+    #pragma omp parallel for
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
@@ -82,7 +82,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 {
   float tolerance = 1e18; //set quantities to zero which are less than 10^(-18)
 
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     gsl_matrix *Tmunu; //T^(mu,nu) with two contravariant indices; we need to lower an index
@@ -236,7 +236,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 }
 void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pressure, float *bulkPressure)
 {
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     // PI = -1/3 * (T^(mu)_(mu) - epsilon) - p
@@ -247,7 +247,7 @@ void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pr
 }
 void calculateShearViscTensor(float **stressTensor, float *energyDensity, float **flowVelocity, float *pressure, float *bulkPressure, float **shearTensor)
 {
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     // pi^(mu,nu) = T^(mu,nu) - epsilon * u^(mu)u^(nu) + (P + PI) * (g^(mu,nu) - u^(mu)u^(nu))
@@ -270,7 +270,7 @@ void calculateShearViscTensor(float **stressTensor, float *energyDensity, float 
 // n_B = u^(mu)j_(mu)
 void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float **flowVelocity)
 {
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     baryonDensity[is] = (flowVelocity[0][is] * baryonCurrent[0][is]) - (flowVelocity[1][is] * baryonCurrent[1][is]) - (flowVelocity[2][is] * baryonCurrent[2][is]) - (flowVelocity[3][is] * baryonCurrent[3][is]);
@@ -281,7 +281,7 @@ void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, fl
 {
   for (int ivar = 0; ivar < 4; ivar++)
   {
-    #pragma omp parallel for simd
+    #pragma omp parallel for
     for (int is = 0; is < DIM; is++)
     {
       baryonDiffusion[ivar][is] = baryonCurrent[ivar][is] - (baryonDensity[is] * flowVelocity[ivar][is]);

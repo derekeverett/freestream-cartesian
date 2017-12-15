@@ -2,7 +2,7 @@
 
 void freeStream(float *density, float ***shiftedDensity, float dt)
 {
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
