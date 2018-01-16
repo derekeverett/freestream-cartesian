@@ -10,9 +10,9 @@
 #define IC_ENERGY 1
 #define IC_BARYON 1
 #define PI 3.141592654f //question bro?
-#define DIM_X 51 //number of grid points in x direction
-#define DIM_Y 51 //number of grid points in y direction
-#define DIM_Z 51 //number of grid points in z direction
+#define DIM_X 101 //number of grid points in x direction
+#define DIM_Y 101 //number of grid points in y direction
+#define DIM_Z 101 //number of grid points in z direction
 #define DIM_ETA 51 //number of grid points in eta direction (spacetime rapidity)
 #define DIM_T 5 //total number of free-streaming cartesian time steps
 #define DIM (DIM_X * DIM_Y * DIM_Z) //total number of spatial grid points in cartesian coords

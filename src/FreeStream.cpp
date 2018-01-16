@@ -1,8 +1,9 @@
 #include <math.h>
 
-void freeStream(float *density, float ***shiftedDensity, float dt)
+void freeStream(float * restrict density, float *** restrict shiftedDensity, float dt)
 {
   #pragma omp parallel for
+  #pragma acc kernels
   for (int is = 0; is < DIM; is++)
   {
     for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)

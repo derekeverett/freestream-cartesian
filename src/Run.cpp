@@ -7,7 +7,7 @@
 #include "Parameters.h"
 #include "FreeStream.cpp"
 #include "InitialConditions.cpp"
-#include "CoordinateTransformation.cpp"
+//#include "CoordinateTransformation.cpp" !!!REINCLUDE ONCE UNITY HAS SUPPORT FOR INTERP2D !!!
 #include "LandauMatch.cpp"
 #include "EquationOfState.cpp"
 #include "Memory.cpp"
@@ -165,6 +165,8 @@ int main(void)
   float **baryonCurrent;
   baryonCurrent = calloc2dArray(baryonCurrent, 4, DIM_MILNE);
 
+  /************ !!! REINCLUDE ONCE UNITY HAS SUPPORT FOR GSL INTERP2D !!!  ****\
+
   //interpolate T^(mu,nu) and j^(mu) along a regular grid in spacetime rapidity for a fixed longitudinal proper time
   printf("Interpolating conserved currents from cartesian -> milne grid and coordinate transforming tensors \n");
   interpolateToMilneGrid(timeDependentStressTensor, stressTensor, 10);
@@ -176,7 +178,8 @@ int main(void)
   //and perform appropriate transformations to obtain both quantities in milne coords (e.g. j^(mu) = (J^(tau), j^(x),j^(y),j^(eta)))
   transformTensorToMilne(stressTensor, stressTensor);
   if (BARYON) transformVectorToMilne(baryonCurrent, baryonCurrent);
-
+  */
+  
   //variables to store the hydrodynamic variables after the Landau matching is performed
 
   //the energy density in milne coords
